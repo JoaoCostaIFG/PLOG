@@ -3,6 +3,8 @@ playIO :-
   Player is 0,
   display_game(+GameState, +Player).
 
+% DRAWING %
+
 % draws a given board/GameState on the console
 display_game(+GameState, +Player) :-
   print_board(GameState).
@@ -66,6 +68,10 @@ initial(-GameState) :-
 
 cell_code(0, '\33\[40m B ').
 cell_code(1, '\33\[47m W ').
+
+% GAME LOGIC %
+
+% switch_places(+GameState, -NewState, +X1, +Y1, +X2, +Y2) :- .
 
 % calculates the length of a given list and store it on L
 list_length([], 0).
