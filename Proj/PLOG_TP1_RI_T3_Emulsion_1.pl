@@ -11,7 +11,7 @@ display_game(+GameState, +Player) :-
 
 print_board([]).
 print_board([L | B]) :-
-  list_length(L, Len),
+  length(L, Len),
   print_line_top(Len), nl,
   print_line(L), nl,
   print_line_bot(Len), nl,
@@ -72,8 +72,4 @@ cell_code(1, '\33\[47m W ').
 % GAME LOGIC %
 
 % switch_places(+GameState, -NewState, +X1, +Y1, +X2, +Y2) :- .
-
-% calculates the length of a given list and store it on L
-list_length([], 0).
-list_length([_ | X], L) :- list_length(X, N), L is N + 1.
 
