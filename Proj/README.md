@@ -21,7 +21,7 @@ em xadrez.
 - O **grupo** de uma peça é o conjunto de todas as peças a que podemos chegar
   através de movimentos ortogonais entre peças adjacentes.
 
-- O **tamanho de uma grupo** é o número de peças nele.
+- O **tamanho de um grupo** é o número de peças nele.
 
 - A **pontuação de um jogador** é o tamanho do seu maior grupo.
 
