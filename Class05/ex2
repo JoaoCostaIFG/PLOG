@@ -1,0 +1,9 @@
+a) X = 1, X = 2
+# Nao consegue voltar atrás para dar X=3
+
+b)  X = 1, Y = 1
+    X = 1, Y = 2
+    X = 2, Y = 2
+
+c)  X = 1, Y = 1
+    X = 1, Y = 2
