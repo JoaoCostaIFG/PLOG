@@ -9,11 +9,11 @@
 
 [Sítio onde obtemos esta informação.](https://boardgamegeek.com/boardgame/311851/emulsion)
 
-Emulsion é um jogo de tabuleiro para dois jogadores.  
+**Emulsion** é um jogo de tabuleiro para dois jogadores.  
 O tabuleiro está organizado em quadrículas (**peças**) de duas cores distintas
-(originalmente preto e branco). Este tabuleiro tem tamanho NxN, sendo que N é
-um qualquer número inteiro. No ínicio do jogo, as **peças** estão organizadas
-em xadrez.
+(originalmente preto e branco). Este tabuleiro tem tamanho **NxN**, sendo que
+**N** é um qualquer número inteiro. No ínicio do jogo, as **peças** estão
+organizadas um padrão em xadrez.
 
 - O **valor** de uma peça é o número de peças ortogonalmente adjacentes a essa
   mais metade do número de limites do tabuleiro adjacentes.
@@ -52,13 +52,23 @@ significado que as peças com o mesmo número.
 
 ### Escolha da jogada
 
-O jogador insere as coordenadas da peça que quer trocar (Xe Y
-pertencentes a [0, N[) e um direçao identificada pelas letras:
-n, nw, w, sw, s, se, e, ne.
+O jogador irá inserir as coordenadas da peça sobre a qual quer jogar (X e Y
+pertencentes a [0, N[) e uma direção identificada pelas letras:
+**n**, **nw**, **w**, **sw**, **s**, **se**, **e**, **ne**.
 
 ## Imagens
 
-Initial board state:
+### Notes about color display
+
+O nosso programa usa os códigos de escape ANSI para definir/alterar as cores
+do terminal, tanto do _background_, como do _foreground_. É possível que
+alguns emuladores de terminais não reconheçam estes códigos e, por isso, não
+mostrem as diferentes cores.
+
+É necessário o uso de uma fonte com suporte para caracteres **UTF-8**. No
+caso do _sicstus_ no _Windows_, recomendámos a fonte **consolas**.
+
+### Initial board state
 
 ```pl
   GameState = [
@@ -82,7 +92,7 @@ Initial board state:
 
 ![Initial board state](img/initial_board.png)
 
-Mid game board state:
+### Mid game board state
 
 ```pl
   GameState = [
@@ -106,7 +116,7 @@ Mid game board state:
 
 ![Mid game board state](img/midgame_board.png)
 
-End board state:
+### End board state
 
 ```pl
   GameState = [

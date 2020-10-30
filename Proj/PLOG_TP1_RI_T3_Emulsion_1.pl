@@ -1,27 +1,32 @@
 play :-
   initial(-GameState),
   Player is 0,
-  display_game(+GameState, +Player).
+  display_game(+GameState, +Player),
+  display_player(+Player).
+
+% generate NxN initial board
+genInitBoard(-GameState, N) :-
+  genInitCol(GameState, N, 1).
+
+genInitCol([], N, N).
+genInitCol([Line|Tab], N, CurrN) :- 
+  CurrN < N,
+  C is mod(CurrN, 2),
+  LineN is N + C - 1,
+  genInitLine(Line, LineN, C),
+  NewN is CurrN + 1,
+  genInitCol(Tab, N, NewN).
+
+genInitLine([], N, N).
+genInitLine([C|L], N, CurrN) :-
+  CurrN < N,
+  C is mod(CurrN, 2),
+  NewN is CurrN + 1,
+  genInitLine(L, N, NewN).
 
 % Get 15x15 initial board (checkered)
 initial(-GameState) :-
-  GameState = [
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
-  ].
+  genInitBoard(-GameState, 16). % N is 16 - 1 = 15
 
 midGame(-GameState) :-
   GameState = [
@@ -62,6 +67,11 @@ endGame(-GameState) :-
   ].
 
 % DRAWING %
+display_player(+Player) :-
+  nl,
+  set_bg_color(+Player), set_fg_color(+Player),
+  write('Player: '), write(Player),
+  reset_ansi.
 
 % draws a given board/GameState on the console
 display_game(+GameState, +Player) :-

@@ -1,7 +1,5 @@
 % a)
 
-test(A, B).
-
 myfunctor(Term, F, Arity) :-
   Term=..[F|Args],
   length(Args, Arity).
