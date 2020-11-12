@@ -26,6 +26,7 @@ game_over(CurrentState, Winner) :-
 
 getMove(Player, CurrentState, Move) :-
   % X & Y
+  write('Select a spot of your color.'), nl,
   write('Insert X '), read(X),
   write('Insert Y '), read(Y),
   X > -1, Y > -1, % TODO verify upper limit
@@ -46,7 +47,7 @@ move(GameState, Move, NewGameState) :-
   switch_spots(GameState, Move, NewGameState).
 % in case of invalid move
 move(GameState, Move, NewGameState) :-
-  write('Invalid move. Try again2.'), nl, fail.
+  write('Invalid move. Try again.'), nl, fail.
 
 switch_spots(CurrentState, [X, Y, X1, Y1], NextState) :-
   switch_spots(CurrentState, X, Y, X1, Y1, NextState).
