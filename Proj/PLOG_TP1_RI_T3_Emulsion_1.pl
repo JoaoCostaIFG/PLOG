@@ -5,38 +5,63 @@
 
 play :-
   initial(InitialState),
-  assert(state(0, InitialState)),
-  repeat,
-    retract(state(Player, CurrentState)),
-    display_game(Player, CurrentState),
-    once(mkMove(Player, CurrentState, NextPlayer, NextState)),
-    assert(state(NextPlayer, NextState)),
-    game_over(NextState, Winner),
-  showResult(Winner).
+  Player is 0,
+  game_loop(Player, InitialState, Winner).
 
-game_over(_, _) :- fail. % for now, will always fail
+game_loop(Player, CurrentState, Winner) :-
+  game_over(CurrentState, Winner).
+game_loop(Player, CurrentState, Winner) :-
+  display_game(Player, CurrentState),
+  repeat,
+    getMove(Player, Move)
+    once(move(CurrentState, Move, NextState)),
+  NextPlayer is mod(Player + 1, 2), % change player
+  game_loop(NextPlayer, NextState, Winner).
 
 % GAME LOGIC %
-mkMove(Player, CurrentBoard, NextPlayer, NextBoard) :-
-  getMove(X, Y, DirecSymb),
+game_over(CurrentState, Winner) :-
+  % TODO verify available plays
+  fail, % for now, will always fail
+  showResult(Winner).
+
+move(GameState, Move, NewGameState) :-
+  getMove(X, Y, X1, Y1).
+% in case of invalid move
+
+getMove(Player, CurrentState, Move) :-
+  % X & Y
+  write('Insert X '), read(X),
+  write('Insert Y '), read(Y),
+  X > -1, Y > -1, % TODO verify upper limit
+  nth0_matrix(X, Y, CurrentState, Color), Player = Color,
+  % Direction
+  write('Insert move direction '), read(DirecSymb),
   direction(DirecX, DirecY, DirecSymb),
   X1 is X + DirecX,
   Y1 is Y + DirecY,
-  % TODO check if move is valid (group value + diferent colors)
-  % switch the two spots
-  nth0_matrix(X, Y, CurrentBoard, Elem),
-  nth0_matrix(X1, Y1, CurrentBoard, Elem1),
-  replace_val_matrix(CurrentBoard, Y, X, Elem1, NextBoard1),
-  replace_val_matrix(NextBoard1, Y1, X1, Elem, NextBoard),
-  % change to the next player
-  NextPlayer is mod(Player + 1, 2).
-
-getMove(X, Y, DirecSymb) :-
-  write('Insert X '), read(X),
-  write('Insert Y '), read(Y),
-  write('Insert move direction '), read(DirecSymb),
+  X1 > -1, Y1 > -1, % TODO verify upper limit
   nl.
+getMove(_, _, _) :-
+  write('Invalid move. Try again.'), nl.
 
+switch_spots(CurrentState, X, Y, X1, Y1, NextState) :-
+  nth0_matrix(X, Y, CurrentState, Elem),
+  nth0_matrix(X1, Y1, CurrentState, Elem1),
+  % switch the two spots
+  replace_val_matrix(CurrentState, Y, X, Elem1, NextState1),
+  replace_val_matrix(NextState1, Y1, X1, Elem, NextState).
+
+% DIRECTIONS %
+direction(0,  -1, 'n').
+direction(-1, -1, 'nw').
+direction(-1, 0,  'w').
+direction(-1, 1,  'sw').
+direction(0,  1,  's').
+direction(1,  1,  'se').
+direction(1,  0,  'e').
+direction(1,  -1, 'ne').
+
+% MATRIX MANIPULATION %
 replace_val([_|T], 0, X, [X|T]).
 replace_val([H|T], I, X, [H|R]) :-
   I > -1,
@@ -54,13 +79,3 @@ replace_val_matrix([H|T], Line, Col, X, [H|R]) :-
 nth0_matrix(X, Y, Matrix, Elem) :-
   nth0(Y, Matrix, List),
   nth0(X, List, Elem).
-
-% DIRECTIONS %
-direction(0,  -1, 'n').
-direction(-1, -1, 'nw').
-direction(-1, 0,  'w').
-direction(-1, 1,  'sw').
-direction(0,  1,  's').
-direction(1,  1,  'se').
-direction(1,  0,  'e').
-direction(1,  -1, 'ne').
