@@ -1,154 +1,66 @@
+:-use_module(library(lists)).
+
+:-include('Emulsion_1_board.pl').
+:-include('Emulsion_1_draw.pl').
+
 play :-
-  initial(-GameState),
-  Player is 0,
-  display_game(+GameState, +Player),
-  display_player(+Player).
+  initial(InitialState),
+  assert(state(0, InitialState)),
+  repeat,
+    retract(state(Player, CurrentState)),
+    display_game(Player, CurrentState),
+    once(mkMove(Player, CurrentState, NextPlayer, NextState)),
+    assert(state(NextPlayer, NextState)),
+    game_over(NextState, Winner),
+  showResult(Winner).
 
-% generate NxN initial board
-genInitBoard(-GameState, N) :-
-  genInitCol(GameState, N, 1).
-
-genInitCol([], N, N).
-genInitCol([Line|Tab], N, CurrN) :- 
-  CurrN < N,
-  C is mod(CurrN, 2),
-  LineN is N + C - 1,
-  genInitLine(Line, LineN, C),
-  NewN is CurrN + 1,
-  genInitCol(Tab, N, NewN).
-
-genInitLine([], N, N).
-genInitLine([C|L], N, CurrN) :-
-  CurrN < N,
-  C is mod(CurrN, 2),
-  NewN is CurrN + 1,
-  genInitLine(L, N, NewN).
-
-% Get 15x15 initial board (checkered)
-initial(-GameState) :-
-  genInitBoard(-GameState, 16). % N is 16 - 1 = 15
-
-midGame(-GameState) :-
-  GameState = [
-    [1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
-  ].
-
-endGame(-GameState) :-
-  GameState = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
-  ].
-
-% DRAWING %
-display_player(+Player) :-
-  nl,
-  set_bg_color(+Player), set_fg_color(+Player),
-  write('Player: '), write(Player),
-  reset_ansi.
-
-% draws a given board/GameState on the console
-display_game(+GameState, +Player) :-
-  print_board(GameState).
-
-print_board([]).
-print_board([L | B]) :-
-  print_line(L),
-  print_board(B).
-
-% ┌───┐
-% │ W │
-% └───┘
-print_line([]).
-print_line(L) :-
-  print_line_top(L), nl,
-  print_line_center(L), nl,
-  print_line_bot(L), nl.
-
-% prints the top of boxes (cels) of a given line
-print_line_top([]).
-print_line_top([C | L]) :-
-  set_bg_color(+C),
-  set_fg_color(+C),
-  put_code(9484), put_code(9472), put_code(9472), put_code(9472), put_code(9488),
-  reset_ansi,
-  print_line_top(L).
-
-% prints the bottom of boxes (cels) of a given line
-print_line_bot([]).
-print_line_bot([C | L]) :-
-  set_bg_color(+C),
-  set_fg_color(+C),
-  put_code(9492), put_code(9472), put_code(9472), put_code(9472), put_code(9496),
-  reset_ansi,
-  print_line_bot(L).
-
-% prints the center of the boxes (cells) and the cell content of a given line
-print_line_center([]).
-print_line_center([C | L]) :-
-  print_cell(C),
-  print_line_center(L).
-
-% prints the 'center' of a cell
-print_cell(C) :-
-  cell_code(C, Code),
-  set_bg_color(+C), set_fg_color(+C),
-  put_code(9474), write('\33\[1m'), write(Code), write('\33\[22m'), put_code(9474),
-  reset_ansi.
-
-cell_code(0, ' B ').
-cell_code(1, ' W ').
-cell_fg_color(0, '\33\[34m').
-cell_fg_color(1, '\33\[31m').
-cell_bg_color(0, '\33\[40m').
-cell_bg_color(1, '\33\[47m').
-
-% sets the terminal foreground color
-set_fg_color(+C) :-
-  cell_fg_color(C, Color),
-  write(Color).
-% sets the terminal background color
-set_bg_color(+C) :-
-  cell_bg_color(C, Color),
-  write(Color).
-
-% resets all ansi escapes
-reset_ansi :- write('\33\[0m').
+game_over(_, _) :- fail. % for now, will always fail
 
 % GAME LOGIC %
+mkMove(Player, CurrentBoard, NextPlayer, NextBoard) :-
+  getMove(X, Y, DirecSymb),
+  direction(DirecX, DirecY, DirecSymb),
+  X1 is X + DirecX,
+  Y1 is Y + DirecY,
+  % TODO check if move is valid (group value + diferent colors)
+  % switch the two spots
+  nth0_matrix(X, Y, CurrentBoard, Elem),
+  nth0_matrix(X1, Y1, CurrentBoard, Elem1),
+  replace_val_matrix(CurrentBoard, Y, X, Elem1, NextBoard1),
+  replace_val_matrix(NextBoard1, Y1, X1, Elem, NextBoard),
+  % change to the next player
+  NextPlayer is mod(Player + 1, 2).
 
-% Switch directions
-direction(0, 'n').
-direction(1, 'nw').
-direction(2, 'w').
-direction(3, 'sw').
-direction(4, 's').
-direction(5, 'se').
-direction(6, 'e').
-direction(7, 'ne').
+getMove(X, Y, DirecSymb) :-
+  write('Insert X '), read(X),
+  write('Insert Y '), read(Y),
+  write('Insert move direction '), read(DirecSymb),
+  nl.
+
+replace_val([_|T], 0, X, [X|T]).
+replace_val([H|T], I, X, [H|R]) :-
+  I > -1,
+  NI is I - 1,
+  replace_val(T, NI, X, R), !.
+replace_val(L, _, _, L).
+
+replace_val_matrix([H|T], 0, Col, X, [R|T]) :-
+  replace_val(H, Col, X, R).
+replace_val_matrix([H|T], Line, Col, X, [H|R]) :-
+  Line > -1,
+  Line1 is Line - 1,
+  replace_val_matrix(T, Line1, Col, X, R).
+
+nth0_matrix(X, Y, Matrix, Elem) :-
+  nth0(Y, Matrix, List),
+  nth0(X, List, Elem).
+
+% DIRECTIONS %
+direction(0,  -1, 'n').
+direction(-1, -1, 'nw').
+direction(-1, 0,  'w').
+direction(-1, 1,  'sw').
+direction(0,  1,  's').
+direction(1,  1,  'se').
+direction(1,  0,  'e').
+direction(1,  -1, 'ne').
