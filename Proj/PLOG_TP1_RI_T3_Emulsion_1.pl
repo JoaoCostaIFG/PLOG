@@ -27,6 +27,8 @@ game_over(CurrentState, Winner) :-
 move(GameState, Move, NewGameState) :-
   getMove(X, Y, X1, Y1).
 % in case of invalid move
+move(_, _, _) :-
+  write('Invalid move. Try again.'), nl.
 
 getMove(Player, CurrentState, Move) :-
   % X & Y
@@ -41,6 +43,7 @@ getMove(Player, CurrentState, Move) :-
   Y1 is Y + DirecY,
   X1 > -1, Y1 > -1, % TODO verify upper limit
   nl.
+% in case of invalid move
 getMove(_, _, _) :-
   write('Invalid move. Try again.'), nl.
 
