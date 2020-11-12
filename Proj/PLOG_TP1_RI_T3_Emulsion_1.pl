@@ -13,8 +13,8 @@ game_loop(Player, CurrentState, Winner) :-
 game_loop(Player, CurrentState, Winner) :-
   display_game(Player, CurrentState),
   repeat,
-    getMove(Player, Move)
-    once(move(CurrentState, Move, NextState)),
+    getMove(Player, CurrentState, Move),
+    move(CurrentState, Move, NextState),
   NextPlayer is mod(Player + 1, 2), % change player
   game_loop(NextPlayer, NextState, Winner).
 
@@ -24,12 +24,6 @@ game_over(CurrentState, Winner) :-
   fail, % for now, will always fail
   showResult(Winner).
 
-move(GameState, Move, NewGameState) :-
-  getMove(X, Y, X1, Y1).
-% in case of invalid move
-move(_, _, _) :-
-  write('Invalid move. Try again.'), nl.
-
 getMove(Player, CurrentState, Move) :-
   % X & Y
   write('Insert X '), read(X),
@@ -38,15 +32,24 @@ getMove(Player, CurrentState, Move) :-
   nth0_matrix(X, Y, CurrentState, Color), Player = Color,
   % Direction
   write('Insert move direction '), read(DirecSymb),
+  nl,
   direction(DirecX, DirecY, DirecSymb),
   X1 is X + DirecX,
   Y1 is Y + DirecY,
   X1 > -1, Y1 > -1, % TODO verify upper limit
-  nl.
+  Move = [X, Y, X1, Y1].
 % in case of invalid move
 getMove(_, _, _) :-
-  write('Invalid move. Try again.'), nl.
+  write('Invalid move. Try again.'), nl, fail.
 
+move(GameState, Move, NewGameState) :-
+  switch_spots(GameState, Move, NewGameState).
+% in case of invalid move
+move(GameState, Move, NewGameState) :-
+  write('Invalid move. Try again2.'), nl, fail.
+
+switch_spots(CurrentState, [X, Y, X1, Y1], NextState) :-
+  switch_spots(CurrentState, X, Y, X1, Y1, NextState).
 switch_spots(CurrentState, X, Y, X1, Y1, NextState) :-
   nth0_matrix(X, Y, CurrentState, Elem),
   nth0_matrix(X1, Y1, CurrentState, Elem1),
