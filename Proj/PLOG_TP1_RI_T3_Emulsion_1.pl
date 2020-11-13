@@ -4,16 +4,84 @@
 :-include('Emulsion_1_draw.pl').
 
 play :-
-  initial(InitialState),
+  midGame(InitialState),
   Player is 0,
-  game_loop(Player, InitialState, Winner).
+  getAllAdjacent([0, 0], Res, InitialState),
+  length(InitialState, L1),
+  calcValue(Res, L1, V),
+
+  write(V).
+  %game_loop(Player, InitialState, Winner).
+
+% Base case%
+% getValue(X, Y, Value, Length of board, [Dirs])
+getValue(0, 0, 1, L, ['s', 'e']) :- !.
+getValue(0, L, 1, L, ['n', 'e']) :- !.
+getValue(L, 0, 1, L, ['s', 'w']) :- !.
+getValue(L, L, 1, L, ['n', 'w']) :- !.
+getValue(X, 0, 0.5, L, ['s', 'e', 'w']) :- !.
+getValue(X, L, 0.5, L, ['n', 'e', 'w']) :- !.
+getValue(0, Y, 0.5, L, ['e', 'n', 's']) :- !.
+getValue(L, Y, 0.5, L, ['w', 'n', 's']) :- !.
+getValue(_, _, 0, L, ['n', 's', 'e', 'w']) :- !.
+
+coordMove([X, Y], Direc, [Xn, Yn]) :-
+    direction(X_inc, Y_inc, Direc),
+    Xn is X + X_inc,
+    Yn is Y + Y_inc.
+
+adjacent(Point, Point, _).
+adjacent(Point1, Point2, Directions) :-
+    member(Direction, Directions),
+    coordMove(Point1, Direction, Point2).
+
+insideBounds([X, Y], L) :-
+    X >= 0, X < L,
+    Y >= 0, Y < L.
+
+connected([X1, Y1], [X2, Y2], State) :-
+    length(State, L),
+    insideBounds([X1, Y1], L),
+    getValue(X1, Y1, _, L, Direcs),
+    adjacent([X1, Y1], [X2, Y2], Direcs),
+    insideBounds([X2, Y2], L),
+    nth0_matrix(X1, Y1, State, Val),
+    nth0_matrix(X2, Y2, State, Val).
+
+getAllAdjacent(Start, Res, _State) :-
+    setof(Neighbour, connected(Start, Neighbour, _State), Neighbours),
+    searchAdjacent(Neighbours, Res, _State, [], _).
+
+searchAdjacent([], [], State, Visited, Visited).
+searchAdjacent([Neighbour | Neighbours], Res, _State, Visited, NVis) :-
+    member(Neighbour, Visited),
+    searchAdjacent(Neighbours, Res, _State, Visited, NVis).
+searchAdjacent([Neighbour | Neighbours], [Neighbour | Res], _State, Vis, NVis) :-
+    \+ member(Neighbour, Vis),
+    append(Vis, [Neighbour], TmpVisited),
+
+    setof(NewNeighbour, connected(Neighbour, NewNeighbour, _State), NewNeighbours),
+    searchAdjacent(NewNeighbours, CurrRes, _State, TmpVisited, CurrVisited),
+    searchAdjacent(Neighbours, NextRes, _State, CurrVisited, NVis),
+    append(CurrRes, NextRes, Res).
+
+calcValue([[X, Y] | []], L, V) :- getValue(X, Y, V, L, _).
+calcValue([[X, Y] | Coords], L, Res) :-
+    getValue(X, Y, V, L, _),
+    %Res = 1 + V + NRes,
+    calcValue(Coords, L, NRes),
+    Res is 1 + V + NRes.
+
+testPrint([]) :- write('\n').
+testPrint([X | L]) :-
+    write(X), write('-'), testPrint(L).
 
 game_loop(Player, CurrentState, Winner) :-
   game_over(CurrentState, Winner).
 game_loop(Player, CurrentState, Winner) :-
   display_game(Player, CurrentState),
   repeat,
-    getMove(Player, Move)
+    getMove(Player, Move),
     once(move(CurrentState, Move, NextState)),
   NextPlayer is mod(Player + 1, 2), % change player
   game_loop(NextPlayer, NextState, Winner).
