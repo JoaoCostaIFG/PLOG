@@ -32,7 +32,9 @@ game_loop(Player, CurrentState) :-
 game_over(CurrentState, Winner) :-
   \+valid_moves(CurrentState, 0, LLL),
   \+valid_moves(CurrentState, 1, LLL),
-  showResult(Winner).
+  value(CurrentState, 0, V0),
+  WinnerVal is V0,
+  showResult(Winner, WinnerVal, 0).
 
 % Player move
 getMove(0, Player, CurrentState, Move) :-
@@ -149,9 +151,9 @@ valid_moves(GameState, Player, ListOfMoves) :-
 possible_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
   state_getLength(GameState, L),
   getValue(X1, Y1, _, L, Direcs),
-  state_nth0Board(GameState, [X1, Y1], Player)
+  state_nth0Board(GameState, [X1, Y1], Player),
   next_player(Player, NextPlayer),
-  state_nth0Board(GameState, [X2, Y2], NextPlayer)
+  state_nth0Board(GameState, [X2, Y2], NextPlayer),
   adjacent([X1, Y1], [X2, Y2], Direcs).
 
 valid_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
@@ -163,3 +165,17 @@ valid_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
   once(playValue([X2, Y2], NewGameState, NewV)),
   NewV > CurrV.
 
+% Returns sorted (desc.) list of the values of all groups
+value(GameState, Player, Value) :-
+  state_getLength(GameState, L),
+  bagof(Res, calcValue([[0, 0], [1, 0], [0, 1], [1, 1]], L, Res), ListOfVals),
+  sort(ListOfVals, A),
+  write(A), nl,
+  my_max(ListOfVals, Value).
+
+my_max([], R, R). %end
+my_max([X|Xs], WK, R) :-
+  X > WK, my_max(Xs, X, R). %WK is Carry about
+my_max([X|Xs], WK, R) :-
+  X =< WK, my_max(Xs, WK, R).
+my_max([X|Xs], R) :- my_max(Xs, X, R). %start

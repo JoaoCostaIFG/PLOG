@@ -6,10 +6,12 @@ display_game(Player, GameState) :-
   display_player(Player),
   nl.
 
-showResult(Winner) :-
+showResult(Winner, WinnerPoints, LoserPoints) :-
   nl,
   set_bg_color(Winner), set_fg_color(Winner),
-  write('Player '), write(Winner), write(' wins!'),
+  write('Player '), write(Winner), write(' wins with '),
+  write(WinnerPoints), write(' points vs. '), write(LoserPoints),
+  write(' points!'),
   reset_ansi, nl.
 
 print_board([]).
