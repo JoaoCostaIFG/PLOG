@@ -3,18 +3,7 @@
 :-include('Emulsion_1_board.pl').
 :-include('Emulsion_1_draw.pl').
 :-include('Emulsion_1_menu.pl').
-
-% GAMESTATE OBJECT %
-make_state(GameSettings, Board, gameState(GameSettings, Length, Board)) :-
-  length(Board, Length).
-
-state_getSettings(gameState(GameSettings, Length, Board), GameSettings).
-state_getLength(gameState(GameSettings, Length, Board), Length).
-state_getBoard(gameState(GameSettings, Length, Board), Board).
-state_setBoard(Board, gameState(GameSettings, Length, _), gameState(GameSettings, Length, Board)).
-
-state_nth0Board(gameState(GameSettings, Length, Board), [X, Y], Ret) :-
-  nth0_matrix(X, Y, Board, Ret).
+:-include('Emulsion_1_state.pl').
 
 play :-
   menu(GameSettings),
@@ -23,7 +12,7 @@ play :-
   Player is 0,
   game_loop(Player, InitialState, Winner).
 
-game_loop(Player, CurrentState, Winner) :-
+game_loop(_, CurrentState, Winner) :-
   game_over(CurrentState, Winner).
 game_loop(Player, CurrentState, Winner) :-
   state_getBoard(CurrentState, CurrentBoard),
@@ -45,12 +34,12 @@ getMove(Player, CurrentState, Move) :-
   nl, write('Select a spot of your color.'), nl,
   write('Insert X '), read(X),
   write('Insert Y '), read(Y),
-  X > -1, Y > -1, % TODO verify upper limit
+  state_insideBounds(CurrentState, [X, Y]),
   state_nth0Board(CurrentState, [X, Y], Player),
   % Direction
   write('Insert move direction '), read(DirecSymb), nl,
   coordMove([X, Y], DirecSymb, [X1, Y1]),
-  X1 > -1, Y1 > -1, % TODO verify upper limit
+  state_insideBounds(CurrentState, [X1, Y1]),
   Move = [X, Y, X1, Y1].
 % in case of invalid move
 getMove(_, _, _) :-
@@ -66,15 +55,8 @@ move(GameState, Move, NewGameState) :-
   playValue([X1, Y1], NewGameState, NewV),
   NewV > CurrV.
 % in case of invalid move
-move(GameState, Move, NewGameState) :-
+move(_, _, _) :-
   write('Invalid move. Try again.'), nl, fail.
-
-switch_spots(CurrentState, [X, Y, X1, Y1], NextState) :-
-  nth0_matrix(X, Y, CurrentState, Elem),
-  nth0_matrix(X1, Y1, CurrentState, Elem1),
-  % switch the two spots
-  replace_val_matrix(CurrentState, Y, X, Elem1, NextState1),
-  replace_val_matrix(NextState1, Y1, X1, Elem, NextState).
 
 % DIRECTIONS %
 direction(0,  -1, 'n').
@@ -86,39 +68,35 @@ direction(1,  1,  'se').
 direction(1,  0,  'e').
 direction(1,  -1, 'ne').
 
-% VALUES %
-% Base case%
-% getValue(X, Y, Value, Last index, [Dirs])
-getValue(0, 0, 1, L, ['s', 'e']) :- !.
-getValue(0, L, 1, L, ['n', 'e']) :- !.
-getValue(L, 0, 1, L, ['s', 'w']) :- !.
-getValue(L, L, 1, L, ['n', 'w']) :- !.
-getValue(X, 0, 0.5, L, ['s', 'e', 'w']) :- !.
-getValue(X, L, 0.5, L, ['n', 'e', 'w']) :- !.
-getValue(0, Y, 0.5, L, ['e', 'n', 's']) :- !.
-getValue(L, Y, 0.5, L, ['w', 'n', 's']) :- !.
-getValue(_, _, 0, L, ['n', 's', 'e', 'w']) :- !.
-
 coordMove([X, Y], Direc, [Xn, Yn]) :-
   direction(X_inc, Y_inc, Direc),
   Xn is X + X_inc,
   Yn is Y + Y_inc.
+
+% VALUES %
+% Base case %
+% getValue(X, Y, Value, Last index, [Dirs])
+getValue(0,   0,  1,    _, ['s', 'e']) :- !.
+getValue(0,   _L, 1,    _L, ['n', 'e']) :- !.
+getValue(_L,  0,  1,    _L, ['s', 'w']) :- !.
+getValue(_L,  _L, 1,    _L, ['n', 'w']) :- !.
+getValue(_X,  0,  0.5,  _L, ['s', 'e', 'w']) :- !.
+getValue(_X,  _L, 0.5,  _L, ['n', 'e', 'w']) :- !.
+getValue(0,   _Y, 0.5,  _L, ['e', 'n', 's']) :- !.
+getValue(_L,  _Y, 0.5,  _L, ['w', 'n', 's']) :- !.
+getValue(_,   _,  0,    _L, ['n', 's', 'e', 'w']) :- !.
 
 adjacent(Point, Point, _).
 adjacent(Point1, Point2, Directions) :-
   member(Direction, Directions),
   coordMove(Point1, Direction, Point2).
 
-insideBounds([X, Y], L) :-
-  X >= 0, X < L,
-  Y >= 0, Y < L.
-
 connected([X1, Y1], [X2, Y2], State) :-
   state_getLength(State, L),
-  insideBounds([X1, Y1], L),
+  state_insideBounds(State, [X1, Y1]),
   L1 is L - 1, getValue(X1, Y1, _, L1, Direcs),
   adjacent([X1, Y1], [X2, Y2], Direcs),
-  insideBounds([X2, Y2], L),
+  state_insideBounds(State, [X2, Y2]),
   state_nth0Board(State, [X1, Y1], Val),
   state_nth0Board(State, [X2, Y2], Val).
 
@@ -126,7 +104,7 @@ getAllAdjacent(Start, Res, _State) :-
   setof(Neighbour, connected(Start, Neighbour, _State), Neighbours),
   searchAdjacent(Neighbours, Res, _State, [], _).
 
-searchAdjacent([], [], State, Visited, Visited).
+searchAdjacent([], [], _State, Visited, Visited).
 searchAdjacent([Neighbour | Neighbours], Res, _State, Visited, NVis) :-
   member(Neighbour, Visited),
   searchAdjacent(Neighbours, Res, _State, Visited, NVis).
@@ -151,21 +129,3 @@ playValue([X, Y], State, V) :-
   state_getLength(State, L),
   calcValue(Res, L, V).
 
-% MATRIX MANIPULATION %
-replace_val([_|T], 0, X, [X|T]).
-replace_val([H|T], I, X, [H|R]) :-
-  I > -1,
-  NI is I - 1,
-  replace_val(T, NI, X, R), !.
-replace_val(L, _, _, L).
-
-replace_val_matrix([H|T], 0, Col, X, [R|T]) :-
-  replace_val(H, Col, X, R).
-replace_val_matrix([H|T], Line, Col, X, [H|R]) :-
-  Line > -1,
-  Line1 is Line - 1,
-  replace_val_matrix(T, Line1, Col, X, R).
-
-nth0_matrix(X, Y, Matrix, Elem) :-
-  nth0(Y, Matrix, List),
-  nth0(X, List, Elem).
