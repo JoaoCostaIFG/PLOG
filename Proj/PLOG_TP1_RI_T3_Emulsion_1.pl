@@ -154,3 +154,19 @@ replace_val_matrix([H|T], Line, Col, X, [H|R]) :-
 nth0_matrix(X, Y, Matrix, Elem) :-
   nth0(Y, Matrix, List),
   nth0(X, List, Elem).
+
+
+% ListOfMoves : [X1, Y1, X2, Y2] Switch 1 with 2
+%valid_moves(+GameState, +Player, -ListOfMoves) :-
+
+
+valid_move(+GameState, +Player, [X1, Y1], [X2, Y2]) :-
+    getValue(X1, Y1, _, L, Direcs),
+    adjacent([X1, Y1], [X2, Y2], Direcs),
+    nth0_matrix(X1, Y1, State, Val),
+    \+ nth0_matrix(X2, Y2, State, Val),
+
+    getVal(GameState, [X1, Y1], PrevSum),
+    switch_spots(GameState, X1, Y1, X2, Y2, NextState),
+    getVal(NextState, [X2, Y2], CurrSum),
+    CurrSum > PrevSum.
