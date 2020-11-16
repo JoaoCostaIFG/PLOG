@@ -89,15 +89,15 @@ direction(1,  -1, 'ne').
 % VALUES %
 % Base case%
 % getValue(X, Y, Value, Last index, [Dirs])
-getValue(0, 0, 1, L, ['s', 'e']) :- !.
-getValue(0, L, 1, L, ['n', 'e']) :- !.
-getValue(L, 0, 1, L, ['s', 'w']) :- !.
-getValue(L, L, 1, L, ['n', 'w']) :- !.
-getValue(X, 0, 0.5, L, ['s', 'e', 'w']) :- !.
-getValue(X, L, 0.5, L, ['n', 'e', 'w']) :- !.
-getValue(0, Y, 0.5, L, ['e', 'n', 's']) :- !.
-getValue(L, Y, 0.5, L, ['w', 'n', 's']) :- !.
-getValue(_, _, 0, L, ['n', 's', 'e', 'w']) :- !.
+getValue(0, 0, 1, L, ['s', 'e']).
+getValue(0, L, 1, L, ['n', 'e']).
+getValue(L, 0, 1, L, ['s', 'w']).
+getValue(L, L, 1, L, ['n', 'w']).
+getValue(X, 0, 0.5, L, ['s', 'e', 'w']).
+getValue(X, L, 0.5, L, ['n', 'e', 'w']).
+getValue(0, Y, 0.5, L, ['e', 'n', 's']).
+getValue(L, Y, 0.5, L, ['w', 'n', 's']).
+getValue(_, _, 0, L, ['n', 's', 'e', 'w']).
 
 coordMove([X, Y], Direc, [Xn, Yn]) :-
   direction(X_inc, Y_inc, Direc),
@@ -174,14 +174,18 @@ nth0_matrix(X, Y, Matrix, Elem) :-
 % ListOfMoves : [X1, Y1, X2, Y2] Switch 1 with 2
 %valid_moves(+GameState, +Player, -ListOfMoves) :-
 
+next_player(CurrPlayer, NextPlayer) :-
+    NextPlayer is (CurrPlayer + 1) mod 2.
 
-valid_move(+GameState, +Player, [X1, Y1], [X2, Y2]) :-
+valid_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
+    length(GameState, L),
     getValue(X1, Y1, _, L, Direcs),
+    nth0_matrix(X1, Y1, GameState, Player),
+    next_player(Player, NextPlayer),
+    nth0_matrix(X2, Y2, GameState, NextPlayer),
     adjacent([X1, Y1], [X2, Y2], Direcs),
-    nth0_matrix(X1, Y1, State, Val),
-    \+ nth0_matrix(X2, Y2, State, Val),
 
-    getVal(GameState, [X1, Y1], PrevSum),
+    playValue([X1, Y1], GameState, PrevSum),
     switch_spots(GameState, X1, Y1, X2, Y2, NextState),
-    getVal(NextState, [X2, Y2], CurrSum),
+    playValue([X2, Y2], NextState, CurrSum),
     CurrSum > PrevSum.
