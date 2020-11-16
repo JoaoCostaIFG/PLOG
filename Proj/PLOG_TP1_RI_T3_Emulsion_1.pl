@@ -3,27 +3,18 @@
 :-include('Emulsion_1_board.pl').
 :-include('Emulsion_1_draw.pl').
 :-include('Emulsion_1_menu.pl').
-
-% GAMESTATE OBJECT %
-make_state(GameSettings, Board, gameState(GameSettings, Length, Board)) :-
-  length(Board, Length).
-
-state_getSettings(gameState(GameSettings, Length, Board), GameSettings).
-state_getLength(gameState(GameSettings, Length, Board), Length).
-state_getBoard(gameState(GameSettings, Length, Board), Board).
-state_setBoard(Board, gameState(GameSettings, Length, _), gameState(GameSettings, Length, Board)).
-
-state_nth0Board(gameState(GameSettings, Length, Board), [X, Y], Ret) :-
-  nth0_matrix(X, Y, Board, Ret).
+:-include('Emulsion_1_state.pl').
 
 play :-
   menu(GameSettings),
   initial(InitialBoard),
   make_state(GameSettings, InitialBoard, InitialState),
   Player is 0,
-  game_loop(Player, InitialState, Winner).
+  write('?'),
+  valid_moves(InitialState, Player, ListOfMoves),
+  write(ListOfMoves).
 
-game_loop(Player, CurrentState, Winner) :-
+game_loop(_, CurrentState, Winner) :-
   game_over(CurrentState, Winner).
 game_loop(Player, CurrentState, Winner) :-
   state_getBoard(CurrentState, CurrentBoard),
@@ -45,12 +36,12 @@ getMove(Player, CurrentState, Move) :-
   nl, write('Select a spot of your color.'), nl,
   write('Insert X '), read(X),
   write('Insert Y '), read(Y),
-  X > -1, Y > -1, % TODO verify upper limit
+  state_insideBounds(CurrentState, [X, Y]),
   state_nth0Board(CurrentState, [X, Y], Player),
   % Direction
   write('Insert move direction '), read(DirecSymb), nl,
   coordMove([X, Y], DirecSymb, [X1, Y1]),
-  X1 > -1, Y1 > -1, % TODO verify upper limit
+  state_insideBounds(CurrentState, [X1, Y1]),
   Move = [X, Y, X1, Y1].
 % in case of invalid move
 getMove(_, _, _) :-
@@ -66,15 +57,8 @@ move(GameState, Move, NewGameState) :-
   playValue([X1, Y1], NewGameState, NewV),
   NewV > CurrV.
 % in case of invalid move
-move(GameState, Move, NewGameState) :-
+move(_, _, _) :-
   write('Invalid move. Try again.'), nl, fail.
-
-switch_spots(CurrentState, [X, Y, X1, Y1], NextState) :-
-  nth0_matrix(X, Y, CurrentState, Elem),
-  nth0_matrix(X1, Y1, CurrentState, Elem1),
-  % switch the two spots
-  replace_val_matrix(CurrentState, Y, X, Elem1, NextState1),
-  replace_val_matrix(NextState1, Y1, X1, Elem, NextState).
 
 % DIRECTIONS %
 direction(0,  -1, 'n').
@@ -86,6 +70,7 @@ direction(1,  1,  'se').
 direction(1,  0,  'e').
 direction(1,  -1, 'ne').
 
+<<<<<<< HEAD
 % VALUES %
 % Base case%
 % getValue(X, Y, Value, Last index, [Dirs])
@@ -109,16 +94,12 @@ adjacent(Point1, Point2, Directions) :-
   member(Direction, Directions),
   coordMove(Point1, Direction, Point2).
 
-insideBounds([X, Y], L) :-
-  X >= 0, X < L,
-  Y >= 0, Y < L.
-
 connected([X1, Y1], [X2, Y2], State) :-
   state_getLength(State, L),
-  insideBounds([X1, Y1], L),
+  state_insideBounds(State, [X1, Y1]),
   L1 is L - 1, getValue(X1, Y1, _, L1, Direcs),
   adjacent([X1, Y1], [X2, Y2], Direcs),
-  insideBounds([X2, Y2], L),
+  state_insideBounds(State, [X2, Y2]),
   state_nth0Board(State, [X1, Y1], Val),
   state_nth0Board(State, [X2, Y2], Val).
 
@@ -126,7 +107,7 @@ getAllAdjacent(Start, Res, _State) :-
   setof(Neighbour, connected(Start, Neighbour, _State), Neighbours),
   searchAdjacent(Neighbours, Res, _State, [], _).
 
-searchAdjacent([], [], State, Visited, Visited).
+searchAdjacent([], [], _State, Visited, Visited).
 searchAdjacent([Neighbour | Neighbours], Res, _State, Visited, NVis) :-
   member(Neighbour, Visited),
   searchAdjacent(Neighbours, Res, _State, Visited, NVis).
@@ -172,20 +153,23 @@ nth0_matrix(X, Y, Matrix, Elem) :-
 
 
 % ListOfMoves : [X1, Y1, X2, Y2] Switch 1 with 2
-%valid_moves(+GameState, +Player, -ListOfMoves) :-
+valid_moves(GameState, Player, ListOfMoves) :-
+  setof([X, Y], valid_move(GameState, Player, X, Y), ListOfMoves).
+    
 
 next_player(CurrPlayer, NextPlayer) :-
     NextPlayer is (CurrPlayer + 1) mod 2.
 
 valid_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
-    length(GameState, L),
+    state_getLength(GameState, L),
+    state_getBoard(GameState, Board),
     getValue(X1, Y1, _, L, Direcs),
-    nth0_matrix(X1, Y1, GameState, Player),
+    nth0_matrix(X1, Y1, Board, Player),
     next_player(Player, NextPlayer),
-    nth0_matrix(X2, Y2, GameState, NextPlayer),
+    nth0_matrix(X2, Y2, Board, NextPlayer),
     adjacent([X1, Y1], [X2, Y2], Direcs),
 
-    playValue([X1, Y1], GameState, PrevSum),
-    switch_spots(GameState, X1, Y1, X2, Y2, NextState),
-    playValue([X2, Y2], NextState, CurrSum),
+    playValue([X1, Y1], Board, PrevSum),
+    switch_spots(Board, X1, Y1, X2, Y2, NextBoard),
+    playValue([X2, Y2], NextBoard, CurrSum),
     CurrSum > PrevSum.
