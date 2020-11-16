@@ -1,8 +1,8 @@
 % BOARD %
 
 % generate NxN initial board
-genInitBoard(GameState, N) :-
-  genInitCol(GameState, N, 1).
+genInitBoard(Board, N) :-
+  genInitCol(Board, N, 1).
 
 genInitCol([], N, N).
 genInitCol([Line|Tab], N, CurrN) :- 
@@ -21,12 +21,12 @@ genInitLine([C|L], N, CurrN) :-
   genInitLine(L, N, NewN).
 
 % Get 7x7 initial board (checkered)
-initial(GameState) :-
-  genInitBoard(GameState, 8). % N is 8 - 1 = 7
+initial(Board) :-
+  genInitBoard(Board, 8). % N is 8 - 1 = 7
 
-% 15.5
-midGame(GameState) :-
-  GameState = [
+% 15x15
+midGame(Board) :-
+  Board = [
     [1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
     [0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0],
     [1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
@@ -44,33 +44,8 @@ midGame(GameState) :-
     [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
   ].
 
-endGame(GameState) :-
-  %GameState = [
-    %[1, 0],
-    %[0, 0]
-    %].
-  %GameState = [
-    %[0, 0, 0],
-    %[0, 0, 0],
-    %[0, 0, 0]
-    %].
-  %GameState = [
-    %[0, 0, 1, 1],
-    %[0, 0, 1, 1],
-    %[0, 0, 1, 1],
-    %[0, 0, 1, 1]
-    %].
-  %GameState = [
-    %[0, 0, 0, 0, 1, 1, 1, 1],
-    %[0, 0, 0, 0, 1, 1, 1, 1],
-    %[0, 0, 0, 0, 1, 1, 1, 1],
-    %[0, 0, 0, 0, 1, 1, 1, 1],
-    %[0, 0, 0, 0, 1, 1, 1, 1],
-    %[0, 0, 0, 0, 1, 1, 1, 1],
-    %[0, 0, 0, 0, 1, 1, 1, 1],
-    %[0, 0, 0, 0, 1, 1, 1, 1]
-    %].
-  GameState = [
+endGame(Board) :-
+  Board = [
     [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
     [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
     [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
