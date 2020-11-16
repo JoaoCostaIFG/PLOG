@@ -34,12 +34,12 @@ game_over(CurrentState, Winner) :-
 getMove(0, Player, CurrentState, Move) :-
   % X & Y
   nl, write('Select a spot of your color.'), nl,
-  write('Insert X '), read(X),
-  write('Insert Y '), read(Y),
+  write('Insert X '), input(X),
+  write('Insert Y '), input(Y),
   state_insideBounds(CurrentState, [X, Y]),
   state_nth0Board(CurrentState, [X, Y], Player),
   % Direction
-  write('Insert move direction '), read(DirecSymb), nl,
+  write('Insert move direction '), input(DirecSymb), nl,
   coordMove([X, Y], DirecSymb, [X1, Y1]),
   state_insideBounds(CurrentState, [X1, Y1]),
   Move = [X, Y, X1, Y1].
@@ -112,7 +112,7 @@ connected([X1, Y1], [X2, Y2], State) :-
   state_nth0Board(State, [X2, Y2], Val).
 
 getAllAdjacent(Start, Res, _State) :-
-  setof(Neighbour, connected(Start, Neighbour, _State), Neighbours),
+  findall(Neighbour, connected(Start, Neighbour, _State), Neighbours),
   searchAdjacent(Neighbours, Res, _State, [], _).
 
 searchAdjacent([], [], _State, Visited, Visited).
@@ -122,7 +122,7 @@ searchAdjacent([Neighbour | Neighbours], Res, _State, Visited, NVis) :-
 searchAdjacent([Neighbour | Neighbours], [Neighbour | Res], _State, Vis, NVis) :-
   \+ member(Neighbour, Vis),
   append(Vis, [Neighbour], TmpVisited),
-  setof(NewNeighbour, connected(Neighbour, NewNeighbour, _State), NewNeighbours),
+  findall(NewNeighbour, connected(Neighbour, NewNeighbour, _State), NewNeighbours),
   searchAdjacent(NewNeighbours, CurrRes, _State, TmpVisited, CurrVisited),
   searchAdjacent(Neighbours, NextRes, _State, CurrVisited, NVis),
   append(CurrRes, NextRes, Res).
@@ -131,9 +131,8 @@ calcValue([[X, Y] | []], L, V) :-
   L1 is L - 1, getValue(X, Y, V, L1, _).
 calcValue([[X, Y] | Coords], L, Res) :-
   L1 is L - 1, getValue(X, Y, V, L1, _),
-  % Res = 1 + V + NRes, % tail-recursion but polutes output
-  calcValue(Coords, L, NRes),
-  Res is 1 + V + NRes.
+  Res = 1 + V + NRes,
+  calcValue(Coords, L, NRes).
 
 playValue([X, Y], State, V) :-
   getAllAdjacent([X, Y], Res, State),

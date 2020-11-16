@@ -1,9 +1,22 @@
 :-use_module(library(random)).
 
+% INPUT FUNCTIONS %
+input(Input) :-
+  get_code(Ch),
+  inputAll(Ch, TodosChars),
+  name(Input, TodosChars).
+
+inputAll(10, []).
+inputAll(13, []).
+inputAll(Ch, [Ch | Mais]) :-
+  get_code(Ch1),
+  inputAll(Ch1, Mais).
+
+% MENU %
 menu(GameSettings) :-
   repeat,
     grettingsPanel,
-    read(Op), parseOp(Op, GameSettings).
+    input(Op), parseOp(Op, GameSettings).
 
 grettingsPanel :-
   write('Welcome to emulsion!'), nl,
@@ -29,7 +42,7 @@ getDifficulty(Difficulty) :-
   write('2 - Medium'), nl,
   write('3 - Hard'), nl,
   write('0 - Random'), nl,
-  write('Difficulty? '), read(Dif),
+  write('Difficulty? '), input(Dif),
   parseDif(Dif, Difficulty).
 
 parseDif(0, Dif) :- random(1, 3, Dif).
