@@ -1,9 +1,10 @@
 :-use_module(library(random)).
 
 % INPUT FUNCTIONS %
-input(Input) :-
+input(Prompt, Input) :-
+  prompt(_, Prompt),
   get_code(Ch),
-  inputAll(Ch, TodosChars),
+  once(inputAll(Ch, TodosChars)), % without once it appends inside repeats
   name(Input, TodosChars).
 
 inputAll(10, []).
@@ -16,7 +17,7 @@ inputAll(Ch, [Ch | Mais]) :-
 menu(GameSettings) :-
   repeat,
     grettingsPanel,
-    input(Op), parseOp(Op, GameSettings).
+    input('Option: ', Op), parseOp(Op, GameSettings).
 
 grettingsPanel :-
   write('Welcome to emulsion!'), nl,
@@ -38,12 +39,15 @@ parseOp(3, [Dif1, Dif2]) :-
 parseOp(0, _) :- halt(0).
 
 getDifficulty(Difficulty) :-
-  write('1 - Easy'), nl,
-  write('2 - Medium'), nl,
-  write('3 - Hard'), nl,
-  write('0 - Random'), nl,
-  write('Difficulty? '), input(Dif),
-  parseDif(Dif, Difficulty).
+  repeat,
+    write('1 - Easy'), nl,
+    write('2 - Medium'), nl,
+    write('3 - Hard'), nl,
+    write('0 - Random'), nl,
+    input('Difficulty? ', Dif),
+    parseDif(Dif, Difficulty).
 
 parseDif(0, Dif) :- random(1, 3, Dif).
-parseDif(Dif, Dif).
+parseDif(1, 1).
+parseDif(2, 2).
+parseDif(3, 3).
