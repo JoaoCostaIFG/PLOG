@@ -6,13 +6,13 @@
 :-include('Emulsion_1_state.pl').
 
 play :-
-  menu(GameSettings),
+  %menu(GameSettings),
   initial(InitialBoard),
-  make_state(GameSettings, InitialBoard, InitialState),
+  make_state([0, 0], InitialBoard, InitialState),
   Player is 0,
-  write('?'),
-  valid_moves(InitialState, Player, ListOfMoves),
-  write(ListOfMoves).
+  write('?').
+  %valid_moves(InitialState, Player, ListOfMoves),
+  %write(ListOfMoves), halt(0).
 
 game_loop(_, CurrentState, Winner) :-
   game_over(CurrentState, Winner).
@@ -81,7 +81,6 @@ direction(1,  1,  'se').
 direction(1,  0,  'e').
 direction(1,  -1, 'ne').
 
-<<<<<<< HEAD
 % VALUES %
 % Base case%
 % getValue(X, Y, Value, Last index, [Dirs])
@@ -166,21 +165,25 @@ nth0_matrix(X, Y, Matrix, Elem) :-
 % ListOfMoves : [X1, Y1, X2, Y2] Switch 1 with 2
 valid_moves(GameState, Player, ListOfMoves) :-
   setof([X, Y], valid_move(GameState, Player, X, Y), ListOfMoves).
-    
+  %exclude(valid_move)
 
 next_player(CurrPlayer, NextPlayer) :-
     NextPlayer is (CurrPlayer + 1) mod 2.
 
-valid_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
+possible_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
     state_getLength(GameState, L),
-    state_getBoard(GameState, Board),
+    state_getBoard(GameState, CurrentBoard),
     getValue(X1, Y1, _, L, Direcs),
-    nth0_matrix(X1, Y1, Board, Player),
+    nth0_matrix(X1, Y1, CurrentBoard, Player),
     next_player(Player, NextPlayer),
-    nth0_matrix(X2, Y2, Board, NextPlayer),
-    adjacent([X1, Y1], [X2, Y2], Direcs),
+    nth0_matrix(X2, Y2, CurrentBoard, NextPlayer),
+    adjacent([X1, Y1], [X2, Y2], Direcs).
 
-    playValue([X1, Y1], Board, PrevSum),
-    switch_spots(Board, X1, Y1, X2, Y2, NextBoard),
-    playValue([X2, Y2], NextBoard, CurrSum),
-    CurrSum > PrevSum.
+valid_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
+    possible_move(GameState, Player, [X1, Y1], [X2, Y2]),
+
+    once(switch_spots(CurrentBoard, [X1, Y1, X2, Y2] , NewBoard)),
+    once(state_setBoard(NewBoard, GameState, NewGameState)),
+    once(playValue([X1, Y1], GameState, CurrV)),
+    once(playValue([X2, Y2], NewGameState, NewV)),
+    NewV > CurrV.
