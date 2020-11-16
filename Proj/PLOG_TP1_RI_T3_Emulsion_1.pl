@@ -6,11 +6,13 @@
 :-include('Emulsion_1_state.pl').
 
 play :-
-  menu(GameSettings),
+  %menu(GameSettings),
   initial(InitialBoard),
-  make_state(GameSettings, InitialBoard, InitialState),
+  make_state([0, 0], InitialBoard, InitialState),
   Player is 0,
-  game_loop(Player, InitialState, Winner).
+  write('?').
+  %valid_moves(InitialState, Player, ListOfMoves),
+  %write(ListOfMoves), halt(0).
 
 game_loop(_, CurrentState, Winner) :-
   game_over(CurrentState, Winner).
@@ -79,23 +81,23 @@ direction(1,  1,  'se').
 direction(1,  0,  'e').
 direction(1,  -1, 'ne').
 
+% VALUES %
+% Base case%
+% getValue(X, Y, Value, Last index, [Dirs])
+getValue(0, 0, 1, L, ['s', 'e']).
+getValue(0, L, 1, L, ['n', 'e']).
+getValue(L, 0, 1, L, ['s', 'w']).
+getValue(L, L, 1, L, ['n', 'w']).
+getValue(X, 0, 0.5, L, ['s', 'e', 'w']).
+getValue(X, L, 0.5, L, ['n', 'e', 'w']).
+getValue(0, Y, 0.5, L, ['e', 'n', 's']).
+getValue(L, Y, 0.5, L, ['w', 'n', 's']).
+getValue(_, _, 0, L, ['n', 's', 'e', 'w']).
+
 coordMove([X, Y], Direc, [Xn, Yn]) :-
   direction(X_inc, Y_inc, Direc),
   Xn is X + X_inc,
   Yn is Y + Y_inc.
-
-% VALUES %
-% Base case %
-% getValue(X, Y, Value, Last index, [Dirs])
-getValue(0,   0,  1,    _, ['s', 'e']) :- !.
-getValue(0,   _L, 1,    _L, ['n', 'e']) :- !.
-getValue(_L,  0,  1,    _L, ['s', 'w']) :- !.
-getValue(_L,  _L, 1,    _L, ['n', 'w']) :- !.
-getValue(_X,  0,  0.5,  _L, ['s', 'e', 'w']) :- !.
-getValue(_X,  _L, 0.5,  _L, ['n', 'e', 'w']) :- !.
-getValue(0,   _Y, 0.5,  _L, ['e', 'n', 's']) :- !.
-getValue(_L,  _Y, 0.5,  _L, ['w', 'n', 's']) :- !.
-getValue(_,   _,  0,    _L, ['n', 's', 'e', 'w']) :- !.
 
 adjacent(Point, Point, _).
 adjacent(Point1, Point2, Directions) :-
@@ -139,3 +141,48 @@ playValue([X, Y], State, V) :-
   state_getLength(State, L),
   calcValue(Res, L, V).
 
+% MATRIX MANIPULATION %
+replace_val([_|T], 0, X, [X|T]).
+replace_val([H|T], I, X, [H|R]) :-
+  I > -1,
+  NI is I - 1,
+  replace_val(T, NI, X, R), !.
+replace_val(L, _, _, L).
+
+replace_val_matrix([H|T], 0, Col, X, [R|T]) :-
+  replace_val(H, Col, X, R).
+replace_val_matrix([H|T], Line, Col, X, [H|R]) :-
+  Line > -1,
+  Line1 is Line - 1,
+  replace_val_matrix(T, Line1, Col, X, R).
+
+nth0_matrix(X, Y, Matrix, Elem) :-
+  nth0(Y, Matrix, List),
+  nth0(X, List, Elem).
+
+
+% ListOfMoves : [X1, Y1, X2, Y2] Switch 1 with 2
+valid_moves(GameState, Player, ListOfMoves) :-
+  setof([X, Y], valid_move(GameState, Player, X, Y), ListOfMoves).
+  %exclude(valid_move)
+
+next_player(CurrPlayer, NextPlayer) :-
+    NextPlayer is (CurrPlayer + 1) mod 2.
+
+possible_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
+    state_getLength(GameState, L),
+    state_getBoard(GameState, CurrentBoard),
+    getValue(X1, Y1, _, L, Direcs),
+    nth0_matrix(X1, Y1, CurrentBoard, Player),
+    next_player(Player, NextPlayer),
+    nth0_matrix(X2, Y2, CurrentBoard, NextPlayer),
+    adjacent([X1, Y1], [X2, Y2], Direcs).
+
+valid_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
+    possible_move(GameState, Player, [X1, Y1], [X2, Y2]),
+
+    once(switch_spots(CurrentBoard, [X1, Y1, X2, Y2] , NewBoard)),
+    once(state_setBoard(NewBoard, GameState, NewGameState)),
+    once(playValue([X1, Y1], GameState, CurrV)),
+    once(playValue([X2, Y2], NewGameState, NewV)),
+    NewV > CurrV.
