@@ -18,7 +18,8 @@ game_loop(Player, CurrentState, Winner) :-
   state_getBoard(CurrentState, CurrentBoard),
   display_game(Player, CurrentBoard),
   repeat,
-    once(getMove(Player, CurrentState, Move)),
+    state_getPXSettings(CurrentState, Player, Dif),
+    once(getMove(Dif, Player, CurrentState, Move)),
     once(move(CurrentState, Move, NextState)),
   NextPlayer is mod(Player + 1, 2), % change player
   game_loop(NextPlayer, NextState, Winner).
@@ -29,7 +30,8 @@ game_over(CurrentState, Winner) :-
   fail, % for now, will always fail
   showResult(Winner).
 
-getMove(Player, CurrentState, Move) :-
+% Player move
+getMove(0, Player, CurrentState, Move) :-
   % X & Y
   nl, write('Select a spot of your color.'), nl,
   write('Insert X '), read(X),
@@ -41,6 +43,15 @@ getMove(Player, CurrentState, Move) :-
   coordMove([X, Y], DirecSymb, [X1, Y1]),
   state_insideBounds(CurrentState, [X1, Y1]),
   Move = [X, Y, X1, Y1].
+% Easy AI
+getMove(1, Player, CurrentState, Move) :-
+  Move = [0, 0, 1, 0].
+% Medium AI
+getMove(2, Player, CurrentState, Move) :-
+  Move = [0, 0, 1, 0].
+% Hard AI
+getMove(3, Player, CurrentState, Move) :-
+  Move = [0, 0, 1, 0].
 % in case of invalid move
 getMove(_, _, _) :-
   write('Invalid spot. Try again.'), nl, fail.
