@@ -32,9 +32,10 @@ game_loop(Player, CurrentState) :-
 game_over(CurrentState, Winner) :-
   \+valid_moves(CurrentState, 0, LLL),
   \+valid_moves(CurrentState, 1, LLL),
-  value(CurrentState, 0, V0),
-  WinnerVal is V0,
-  showResult(Winner, WinnerVal, 0).
+  value(CurrentState, 0, V0), value(CurrentState, 1, V1),
+  parseValueList(V0, 1, WinnerVal),
+  parseValueList(V1, 1, LoserVal),
+  showResult(Winner, WinnerVal, LoserVal).
 
 % Player move
 getMove(0, Player, CurrentState, Move) :-
@@ -144,6 +145,37 @@ playValue([X, Y], State, V) :-
   state_getLength(State, L),
   calcValue(Res, L, V).
 
+getAllGroups(State, Player, [], [], Visited).
+getAllGroups(State, Player, [G|Groups], [C|Coords], Visited) :-
+  \+member(C, Visited),
+  getAllAdjacent(C, G, State),
+  append(Visited, G, NewVisited),
+  getAllGroups(State, Player, Groups, Coords, NewVisited).
+getAllGroups(State, Player, Groups, [C|Coords], Visited) :-
+  getAllGroups(State, Player, Groups, Coords, Visited).
+getAllGroups(State, Player, Groups) :-
+  bagof(C, state_nth0Board(State, C, Player), CoordList),
+  getAllGroups(State, Player, Groups, CoordList, []).
+
+getAllGroupsValues(_, [], []).
+getAllGroupsValues(State, [G|Groups], [R|Res]) :-
+  state_getLength(State, L),
+  calcValue(G, L, R),
+  getAllGroupsValues(State, Groups, Res).
+
+% Returns sorted (desc.) list of the values of all groups
+value(GameState, Player, Value) :-
+  getAllGroups(GameState, Player, G),
+  getAllGroupsValues(GameState, G, ListOfVals),
+  sort(ListOfVals, SortedVals), reverse(SortedVals, Value).
+
+parseValueList([], _, _).
+parseValueList([V|ValueList], Order, Value) :-
+  Order > 0,
+  Order1 is Order - 1,
+  parseValueList(ValueList, Order1, NewValue),
+  Value is NewValue + V.
+
 % ListOfMoves : [X1, Y1, X2, Y2] Switch 1 with 2
 valid_moves(GameState, Player, ListOfMoves) :-
   setof([X, Y], valid_move(GameState, Player, X, Y), ListOfMoves).
@@ -151,8 +183,8 @@ valid_moves(GameState, Player, ListOfMoves) :-
 possible_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
   state_getLength(GameState, L),
   getValue(X1, Y1, _, L, Direcs),
-  state_nth0Board(GameState, [X1, Y1], Player),
   next_player(Player, NextPlayer),
+  state_nth0Board(GameState, [X1, Y1], Player),
   state_nth0Board(GameState, [X2, Y2], NextPlayer),
   adjacent([X1, Y1], [X2, Y2], Direcs).
 
@@ -164,14 +196,6 @@ valid_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
   once(playValue([X1, Y1], GameState, CurrV)),
   once(playValue([X2, Y2], NewGameState, NewV)),
   NewV > CurrV.
-
-% Returns sorted (desc.) list of the values of all groups
-value(GameState, Player, Value) :-
-  state_getLength(GameState, L),
-  bagof(Res, calcValue([[0, 0], [1, 0], [0, 1], [1, 1]], L, Res), ListOfVals),
-  sort(ListOfVals, A),
-  write(A), nl,
-  my_max(ListOfVals, Value).
 
 my_max([], R, R). %end
 my_max([X|Xs], WK, R) :-
