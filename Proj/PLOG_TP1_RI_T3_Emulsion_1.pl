@@ -2,36 +2,36 @@
 
 :-include('Emulsion_1_board.pl').
 :-include('Emulsion_1_draw.pl').
+:-include('Emulsion_1_input.pl').
 :-include('Emulsion_1_menu.pl').
 :-include('Emulsion_1_state.pl').
 
 play :-
   menu(GameSettings),
-  initial(InitialBoard),
-  make_state(GameSettings, InitialBoard, InitialState),
-  Player is 0,
+  initial(InitialState1),
+  state_setSettings(GameSettings, InitialState1, InitialState),
+  state_getPlayer(InitialState, Player),
   game_loop(Player, InitialState),
   play. % not sure about this recursion
 
-next_player(Player, NextPlayer) :-
-  NextPlayer is mod(Player + 1, 2).
-
-game_loop(Player, CurrentState) :-
-  game_over(CurrentState, Winner).
 game_loop(Player, CurrentState) :-
   state_getBoard(CurrentState, CurrentBoard),
   display_game(Player, CurrentBoard),
+  game_over(CurrentState, Winner).
+game_loop(Player, CurrentState) :-
   repeat,
     state_getPXSettings(CurrentState, Player, Dif),
     once(getMove(Dif, Player, CurrentState, Move)),
-    once(move(CurrentState, Move, NextState)),
-  next_player(Player, NextPlayer), % change player
+    once(move(CurrentState, Move, StateAfterMove)),
+  state_nextPlayer(StateAfterMove, NextPlayer, NextState), % change player
   game_loop(NextPlayer, NextState).
 
 % GAME LOGIC %
 game_over(CurrentState, Winner) :-
-  \+valid_moves(CurrentState, 0, LLL),
-  \+valid_moves(CurrentState, 1, LLL),
+  state_getPlayer(CurrentState, Player),
+  write('checking '), write(Player), nl,
+  \+valid_moves(CurrentState, Player, _),
+  write('no more '), write(Player), nl,
   value(CurrentState, 0, VL0), value(CurrentState, 1, VL1),
   parseValueList(VL0, VL1, V0, V1, Winner),
   showResult(V0, V1, Winner).
@@ -67,8 +67,8 @@ move(GameState, Move, NewGameState) :-
   state_getBoard(GameState, CurrentBoard),
   once(switch_spots(CurrentBoard, Move, NewBoard)),
   state_setBoard(NewBoard, GameState, NewGameState),
-  playValue([X, Y], GameState, CurrV),
-  playValue([X1, Y1], NewGameState, NewV),
+  once(playValue([X, Y], GameState, CurrV)),
+  once(playValue([X1, Y1], NewGameState, NewV)),
   NewV > CurrV.
 % in case of invalid move
 move(_, _, _) :-

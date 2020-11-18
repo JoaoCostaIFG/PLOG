@@ -1,23 +1,6 @@
 % :-use_module(library(random)).
 
-% INPUT FUNCTIONS %
-% Using this predicates, the user doesn't need '' around his input
-% or . at the end
-input(Prompt, Input) :-
-  prompt(_, Prompt),
-  get_code(Ch),
-  once(inputAll(Ch, TodosChars)), % without once it appends inside repeats
-  name(Input, TodosChars).
-
-inputNum(Prompt, Input) :-
-  input(Prompt, Input),
-  number(Input).
-
-inputAll(10, []).
-inputAll(13, []).
-inputAll(Ch, [Ch | Mais]) :-
-  get_code(Ch1),
-  inputAll(Ch1, Mais).
+:-include('Emulsion_1_input.pl').
 
 % MENU %
 menu(GameSettings) :-
@@ -48,11 +31,15 @@ parseOp(0, _) :- halt(0).
 
 getDifficulty(Difficulty) :-
   repeat,
-    write('1 - Random'), nl,
-    write('2 - Greedy'), nl,
+    write('1 - Easy'), nl,
+    write('2 - Medium'), nl,
+    write('3 - Hard'), nl,
+    write('0 - Random'), nl,
     inputNum('Difficulty? ', Dif),
     parseDif(Dif, Difficulty).
 
 % parseDif(0, Dif) :- random(1, 3, Dif).
+parseDif(0, 0).
 parseDif(1, 1).
 parseDif(2, 2).
+parseDif(3, 3).

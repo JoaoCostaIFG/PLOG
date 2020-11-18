@@ -20,10 +20,33 @@ genInitLine([C|L], N, CurrN) :-
   NewN is CurrN + 1,
   genInitLine(L, N, NewN).
 
-% Get 7x7 initial board (checkered)
-initial(Board) :-
-  genInitBoard(Board, 4). % N is 8 - 1 = 7
+% MATRIX MANIPULATION %
+replace_val([_|T], 0, X, [X|T]).
+replace_val([H|T], I, X, [H|R]) :-
+  I > -1,
+  NI is I - 1,
+  replace_val(T, NI, X, R), !.
+replace_val(L, _, _, L).
 
+replace_val_matrix([H|T], 0, Col, X, [R|T]) :-
+  replace_val(H, Col, X, R).
+replace_val_matrix([H|T], Line, Col, X, [H|R]) :-
+  Line > -1,
+  Line1 is Line - 1,
+  replace_val_matrix(T, Line1, Col, X, R).
+
+nth0_matrix(X, Y, Matrix, Elem) :-
+  nth0(Y, Matrix, List),
+  nth0(X, List, Elem).
+
+switch_spots(Matrix, [X, Y, X1, Y1], NewMatrix) :-
+  nth0_matrix(X, Y, Matrix, Elem),
+  nth0_matrix(X1, Y1, Matrix, Elem1),
+  % switch the two spots
+  replace_val_matrix(Matrix, Y, X, Elem1, NewMatrix1),
+  replace_val_matrix(NewMatrix1, Y1, X1, Elem, NewMatrix).
+
+% EXAMPLE BOARDS %
 % 15x15
 midGame(Board) :-
   Board = [
