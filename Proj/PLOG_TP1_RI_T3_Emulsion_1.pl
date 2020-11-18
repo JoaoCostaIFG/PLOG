@@ -159,7 +159,7 @@ getAllGroups(State, Player, Groups) :-
 getAllGroupsValues(_, [], []).
 getAllGroupsValues(State, [G|Groups], [R|Res]) :-
   state_getLength(State, L),
-  calcValue(G, L, R),
+  length(G, R),
   getAllGroupsValues(State, Groups, Res).
 
 % Returns sorted (desc.) list of the values of all groups
