@@ -32,10 +32,9 @@ game_loop(Player, CurrentState) :-
 game_over(CurrentState, Winner) :-
   \+valid_moves(CurrentState, 0, LLL),
   \+valid_moves(CurrentState, 1, LLL),
-  value(CurrentState, 0, V0), value(CurrentState, 1, V1),
-  parseValueList(V0, 1, WinnerVal),
-  parseValueList(V1, 1, LoserVal),
-  showResult(Winner, WinnerVal, LoserVal).
+  value(CurrentState, 0, VL0), value(CurrentState, 1, VL1),
+  parseValueList(VL0, VL1, V0, V1, Winner),
+  showResult(V0, V1, Winner).
 
 % Player move
 getMove(0, Player, CurrentState, Move) :-
@@ -169,12 +168,40 @@ value(GameState, Player, Value) :-
   getAllGroupsValues(GameState, G, ListOfVals),
   sort(ListOfVals, SortedVals), reverse(SortedVals, Value).
 
-parseValueList([], _, _).
-parseValueList([V|ValueList], Order, Value) :-
-  Order > 0,
-  Order1 is Order - 1,
-  parseValueList(ValueList, Order1, NewValue),
-  Value is NewValue + V.
+parseValueList([], [], Value0, Value1, Acc0, Acc1) :-
+  Value0 is Acc0, Value1 is Acc1.
+parseValueList([], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
+  NewAcc1 is Acc1 + V1,
+  Acc0 = NewAcc1,
+  parseValueList([], VL1, Value0, Value1, Acc0, NewAcc1).
+parseValueList([], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
+  NewAcc1 is Acc1 + V1,
+  Value0 is Acc0, Value1 is NewAcc1.
+parseValueList([V0|VL0], [], Value0, Value1, Acc0, Acc1) :-
+  NewAcc0 is Acc0 + V0,
+  NewAcc0 = Acc1,
+  parseValueList(VL0, [], Value0, Value1, NewAcc0, Acc1).
+parseValueList([V0|VL0], [], Value0, Value1, Acc0, Acc1) :-
+  NewAcc0 is Acc0 + V0,
+  Value0 is NewAcc0, Value1 is Acc1.
+parseValueList([V0|VL0], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
+  NewAcc0 is Acc0 + V0,
+  NewAcc1 is Acc1 + V1,
+  NewAcc0 = NewAcc1,
+  parseValueList(VL0, VL1, Value0, Value1, NewAcc0, NewAcc1).
+parseValueList([V0|VL0], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
+  Value0 is Acc0 + V0,
+  Value1 is Acc1 + V1.
+parseValueList(VL0, VL1, Value0, Value1, Winner) :-
+  parseValueList(VL0, VL1, Value0, Value1, 0, 0),
+  valueCmp(Value0, Value1, Winner).
+
+% returns 0, if V0 > V1
+% returns 1, if V0 < V1
+% returns 2, if V0 = V1
+valueCmp(V0, V1, 0) :- V0 > V1.
+valueCmp(V0, V1, 1) :- V0 < V1.
+valueCmp(V0, V1, 2).
 
 % ListOfMoves : [X1, Y1, X2, Y2] Switch 1 with 2
 valid_moves(GameState, Player, ListOfMoves) :-
