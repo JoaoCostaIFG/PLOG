@@ -186,41 +186,20 @@ value(GameState, Player, Value) :-
 % Receives 2 lists of group sizes (calculated by value())
 % Returns the 2 game results (stops summing when a winner is found
 % or a draw is decided). Winner will store a number representing the
-% end result (see valueCmp)
-parseValueList([], [], Value0, Value1, Acc0, Acc1) :-
-  Value0 is Acc0, Value1 is Acc1.
-parseValueList([], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
-  NewAcc1 is Acc1 + V1,
-  Acc0 = NewAcc1,
-  parseValueList([], VL1, Value0, Value1, Acc0, NewAcc1).
-parseValueList([], [V1|_], Value0, Value1, Acc0, Acc1) :-
-  NewAcc1 is Acc1 + V1,
-  Value0 is Acc0, Value1 is NewAcc1.
-parseValueList([V0|VL0], [], Value0, Value1, Acc0, Acc1) :-
-  NewAcc0 is Acc0 + V0,
-  NewAcc0 = Acc1,
-  parseValueList(VL0, [], Value0, Value1, NewAcc0, Acc1).
-parseValueList([V0|_], [], Value0, Value1, Acc0, Acc1) :-
-  NewAcc0 is Acc0 + V0,
-  Value0 is NewAcc0, Value1 is Acc1.
-parseValueList([V0|VL0], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
-  NewAcc0 is Acc0 + V0,
-  NewAcc1 is Acc1 + V1,
-  NewAcc0 = NewAcc1,
-  parseValueList(VL0, VL1, Value0, Value1, NewAcc0, NewAcc1).
-parseValueList([V0|_], [V1|_], Value0, Value1, Acc0, Acc1) :-
-  Value0 is Acc0 + V0,
-  Value1 is Acc1 + V1.
-parseValueList(VL0, VL1, Value0, Value1, Winner) :-
-  parseValueList(VL0, VL1, Value0, Value1, 0, 0),
-  valueCmp(Value0, Value1, Winner).
-
-% returns 0, if V0 > V1
-% returns 1, if V0 < V1
-% returns 2, if V0 = V1
-valueCmp(V0, V1, 0) :- V0 > V1.
-valueCmp(V0, V1, 1) :- V0 < V1.
-valueCmp(_, _, 2). % otherwise they have to be equal
+% end result 2 - Tie; 1 - Player 1 Wins; 2- Player 2 Wins
+parseValueList(VL0, VL1, V1P, V2P, Winner) :-
+    parseValueListN(VL0, VL1, Winner, V1P, Dif),
+    V2P is V1P + Dif.
+parseValueListN([], [], 2, 0, 0). % Tie
+parseValueListN([V0 | VL0], [V1 | VL1], 0, V0, Dif) :- % Player 0 Wins
+    V0 > V1,
+    Dif is V1 - V0.
+parseValueListN([V0 | VL0], [V1 | VL1], 1, V0, Dif) :- % Player 1 Wins
+    V1 > V0,
+    Dif is V1 - V0.
+parseValueListN([V | VL0], [V | VL1], Winner, NAcc, Dif) :- 
+    parseValueListN(VL0, VL1, Winner, Acc, Dif),
+    NAcc is Acc + V.
 
 % ListOfMoves : [X1, Y1, X2, Y2] Switch 1 with 2
 valid_moves(GameState, Player, ListOfMoves) :-
