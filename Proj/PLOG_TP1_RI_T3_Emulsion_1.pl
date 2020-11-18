@@ -221,3 +221,49 @@ valid_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
   once(playValue([X1, Y1], GameState, CurrV)),
   once(playValue([X2, Y2], NewGameState, NewV)),
   NewV > CurrV.
+
+getAIEasyMove(GameState, Player, ResMove) :-
+    valid_moves(GameState, Player, ListOfMoves),
+    selectBestMove(ListOfMoves, GameState, ResMove).
+
+sortByGroups(Moves, GameState, Res) :- sortByGroups(Moves, [], GameState, Res).
+sortByGroups([], Map, _, Map).
+sortByGroups([Move | Moves], Map, GameState, Res) :-
+    Move = [Start | _],
+    inAnyGroup(Start, Map, Group),
+    addToGroup(Move, Group, Map, NMap),
+    sortByGroups(Moves, NMap, GameState, Res).
+sortByGroups([Move | Moves], Map, GameState, Res) :-
+    Move = [Start | _],
+    getAllAdjacent(Start, Group, GameState),
+    addNewEntry(Group, [Move], Map, NMap),
+    sortByGroups(Moves, NMap, GameState, Res).
+
+add_len(List, L1 - List) :- entryGroupLen(List, L), L1 is -L.
+selectBestMove(Moves, GameState, Res) :-
+    once(sortByGroups(Moves, GameState, Map)),
+    maplist(add_len, Map, KeyMap),
+    keysort(KeyMap, SortedKeyMap),
+    maplist(add_len, SortedMap, SortedKeyMap),
+    nth0(0, SortedMap, BestGroup),
+    getEntryCoord(BestGroup, Res).
+
+% MAP
+% Entries are [Group: Coords] <=> entry(Group, Coords)
+% Map is list of entries = [ entry(Group, Coords) ]
+addNewEntry(Group, Coords, Map, NMap):-
+    append(Map, [entry(Group, [Coords])], NMap).
+% Establishes if a move is part of any group in a Map
+inAnyGroup(Move, Map, Group) :-
+    member(entry(Group, _), Map),
+    member(Move, Group).
+addToGroup(Move, Group, Map, NMap) :-
+    append(L1, [entry(Group, Coords) | L2], Map),
+    append(L1, [entry(Group, [Move | Coords]) | L2], NMap).
+entryCoordsLen(entry(_, Coords), L) :- length(Coords, L).
+entryGroupLen(entry(Group, _), L) :- length(Group, L).
+getEntryCoord(entry(_, [C | Coords]), C).
+print_map([]) :- write('\n\n').
+print_map([entry(Group, Coords) | M]) :-
+    write(Group), write(': '), write(Coords), write('\n'),
+    test_write(M).
