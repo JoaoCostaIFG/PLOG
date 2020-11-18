@@ -1,3 +1,5 @@
+:-use_module(library(lists)).
+
 % BOARD %
 
 % generate NxN initial board

@@ -1,5 +1,3 @@
-% :-use_module(library(random)).
-
 :-include('Emulsion_1_input.pl').
 
 % MENU %
@@ -34,12 +32,7 @@ getDifficulty(Difficulty) :-
     write('1 - Easy'), nl,
     write('2 - Medium'), nl,
     write('3 - Hard'), nl,
-    write('0 - Random'), nl,
-    inputNum('Difficulty? ', Dif),
-    parseDif(Dif, Difficulty).
+    write('4 - Random play'), nl,
+    inputNum('Difficulty? ', Difficulty),
+    Difficulty >= 1, Difficulty =< 4.
 
-% parseDif(0, Dif) :- random(1, 3, Dif).
-parseDif(0, 0).
-parseDif(1, 1).
-parseDif(2, 2).
-parseDif(3, 3).

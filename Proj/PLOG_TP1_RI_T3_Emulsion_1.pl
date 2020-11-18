@@ -1,4 +1,5 @@
-:-use_module(library(lists)).
+:-use_module(library(system)).
+:-use_module(library(random)).
 
 :-include('Emulsion_1_board.pl').
 :-include('Emulsion_1_draw.pl').
@@ -28,9 +29,7 @@ game_loop(Player, CurrentState) :-
 % GAME LOGIC %
 game_over(GameState, Winner) :-
   state_getPlayer(GameState, Player),
-  write('checking '), write(Player), nl,
   \+valid_moves(GameState, Player, _),
-  write('no more '), write(Player), nl,
   value(GameState, 0, VL0), value(GameState, 1, VL1),
   parseValueList(VL0, VL1, V0, V1, Winner),
   showResult(V0, V1, Winner).
@@ -40,12 +39,12 @@ choose_move(GameState, Player, 0, Move) :-
   % X & Y
   nl, write('Select a spot of your color.'), nl,
   inputNum('X? ', X), inputNum('Y? ', Y),
-  state_insideBounds(CurrentState, [X, Y]),
-  state_nth0Board(CurrentState, [X, Y], Player),
+  state_insideBounds(GameState, [X, Y]),
+  state_nth0Board(GameState, [X, Y], Player),
   % Direction
   input('Move direction? ', DirecSymb), nl,
   coordMove([X, Y], DirecSymb, [X1, Y1]),
-  state_insideBounds(CurrentState, [X1, Y1]),
+  state_insideBounds(GameState, [X1, Y1]),
   Move = [X, Y, X1, Y1].
 % Easy AI
 choose_move(GameState, Player, 1, Move) :-
@@ -56,9 +55,27 @@ choose_move(GameState, Player, 2, Move) :-
 % Hard AI
 choose_move(GameState, Player, 3, Move) :-
   Move = [0, 0, 1, 0].
+% Random play AI
+choose_move(GameState, Player, 4, Move) :-
+  valid_moves(GameState, Player, Moves),
+  length(Moves, L), random(0, L, RdmInd),
+  nth0(RdmInd, Moves, MoveNested),
+  % improve list flattening
+  [StartP, EndP] = MoveNested,
+  [X, Y] = StartP, [X1, Y1] = EndP,
+  Move = [X, Y, X1, Y1],
+  ai_moveAnnounce('Random move', Move).
 % in case of invalid move (inputed by the user)
 choose_move(_, _, _, _) :-
   write('Invalid spot. Try again.'), nl, fail.
+
+ai_moveAnnounce(AILevel, [X, Y, X1, Y1]) :-
+  nl,
+  write(AILevel), write(' making move: '), nl,
+  write(' - from: '), write([X, Y]), nl,
+  write(' - to: '), write([X1, Y1]), nl,
+  nl,
+  sleep(2).
 
 % check move and do it
 move(GameState, Move, NewGameState) :-
