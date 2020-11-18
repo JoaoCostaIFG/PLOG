@@ -20,23 +20,23 @@ game_loop(Player, CurrentState) :-
 game_loop(Player, CurrentState) :-
   repeat,
     state_getPXSettings(CurrentState, Player, Dif),
-    once(getMove(Dif, Player, CurrentState, Move)),
+    once(choose_move(CurrentState, Player, Dif, Move)),
     once(move(CurrentState, Move, StateAfterMove)),
   state_nextPlayer(StateAfterMove, NextPlayer, NextState), % change player
   game_loop(NextPlayer, NextState).
 
 % GAME LOGIC %
-game_over(CurrentState, Winner) :-
-  state_getPlayer(CurrentState, Player),
+game_over(GameState, Winner) :-
+  state_getPlayer(GameState, Player),
   write('checking '), write(Player), nl,
-  \+valid_moves(CurrentState, Player, _),
+  \+valid_moves(GameState, Player, _),
   write('no more '), write(Player), nl,
-  value(CurrentState, 0, VL0), value(CurrentState, 1, VL1),
+  value(GameState, 0, VL0), value(GameState, 1, VL1),
   parseValueList(VL0, VL1, V0, V1, Winner),
   showResult(V0, V1, Winner).
 
 % Player move
-getMove(0, Player, CurrentState, Move) :-
+choose_move(GameState, Player, 0, Move) :-
   % X & Y
   nl, write('Select a spot of your color.'), nl,
   inputNum('X? ', X), inputNum('Y? ', Y),
@@ -48,16 +48,16 @@ getMove(0, Player, CurrentState, Move) :-
   state_insideBounds(CurrentState, [X1, Y1]),
   Move = [X, Y, X1, Y1].
 % Easy AI
-getMove(1, Player, CurrentState, Move) :-
+choose_move(GameState, Player, 1, Move) :-
   Move = [0, 0, 1, 0].
 % Medium AI
-getMove(2, Player, CurrentState, Move) :-
+choose_move(GameState, Player, 2, Move) :-
   Move = [0, 0, 1, 0].
 % Hard AI
-getMove(3, Player, CurrentState, Move) :-
+choose_move(GameState, Player, 3, Move) :-
   Move = [0, 0, 1, 0].
-% in case of invalid move
-getMove(_, _, _, _) :-
+% in case of invalid move (inputed by the user)
+choose_move(_, _, _, _) :-
   write('Invalid spot. Try again.'), nl, fail.
 
 % check move and do it
