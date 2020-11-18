@@ -41,7 +41,7 @@ game_over(CurrentState, Winner) :-
 getMove(0, Player, CurrentState, Move) :-
   % X & Y
   nl, write('Select a spot of your color.'), nl,
-  input('X? ', X), input('Y? ', Y),
+  inputNum('X? ', X), inputNum('Y? ', Y),
   state_insideBounds(CurrentState, [X, Y]),
   state_nth0Board(CurrentState, [X, Y], Player),
   % Direction
