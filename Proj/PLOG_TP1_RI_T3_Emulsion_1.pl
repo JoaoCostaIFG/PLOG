@@ -2,7 +2,6 @@
 
 :-include('Emulsion_1_board.pl').
 :-include('Emulsion_1_draw.pl').
-:-include('Emulsion_1_input.pl').
 :-include('Emulsion_1_menu.pl').
 :-include('Emulsion_1_state.pl').
 
@@ -17,7 +16,7 @@ play :-
 game_loop(Player, CurrentState) :-
   state_getBoard(CurrentState, CurrentBoard),
   display_game(Player, CurrentBoard),
-  game_over(CurrentState, Winner).
+  game_over(CurrentState, _Winner).
 game_loop(Player, CurrentState) :-
   repeat,
     state_getPXSettings(CurrentState, Player, Dif),
@@ -144,13 +143,13 @@ playValue([X, Y], State, V) :-
   state_getLength(State, L),
   calcValue(Res, L, V).
 
-getAllGroups(State, Player, [], [], Visited).
+getAllGroups(_State, _Player, [], [], _Visited).
 getAllGroups(State, Player, [G|Groups], [C|Coords], Visited) :-
   \+member(C, Visited),
   getAllAdjacent(C, G, State),
   append(Visited, G, NewVisited),
   getAllGroups(State, Player, Groups, Coords, NewVisited).
-getAllGroups(State, Player, Groups, [C|Coords], Visited) :-
+getAllGroups(State, Player, Groups, [_C|Coords], Visited) :- % pop C
   getAllGroups(State, Player, Groups, Coords, Visited).
 getAllGroups(State, Player, Groups) :-
   bagof(C, state_nth0Board(State, C, Player), CoordList),
@@ -158,7 +157,6 @@ getAllGroups(State, Player, Groups) :-
 
 getAllGroupsValues(_, [], []).
 getAllGroupsValues(State, [G|Groups], [R|Res]) :-
-  state_getLength(State, L),
   length(G, R),
   getAllGroupsValues(State, Groups, Res).
 
@@ -168,20 +166,24 @@ value(GameState, Player, Value) :-
   getAllGroupsValues(GameState, G, ListOfVals),
   sort(ListOfVals, SortedVals), reverse(SortedVals, Value).
 
+% Receives 2 lists of group sizes (calculated by value())
+% Returns the 2 game results (stops summing when a winner is found
+% or a draw is decided). Winner will store a number representing the
+% end result (see valueCmp)
 parseValueList([], [], Value0, Value1, Acc0, Acc1) :-
   Value0 is Acc0, Value1 is Acc1.
 parseValueList([], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
   NewAcc1 is Acc1 + V1,
   Acc0 = NewAcc1,
   parseValueList([], VL1, Value0, Value1, Acc0, NewAcc1).
-parseValueList([], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
+parseValueList([], [V1|_], Value0, Value1, Acc0, Acc1) :-
   NewAcc1 is Acc1 + V1,
   Value0 is Acc0, Value1 is NewAcc1.
 parseValueList([V0|VL0], [], Value0, Value1, Acc0, Acc1) :-
   NewAcc0 is Acc0 + V0,
   NewAcc0 = Acc1,
   parseValueList(VL0, [], Value0, Value1, NewAcc0, Acc1).
-parseValueList([V0|VL0], [], Value0, Value1, Acc0, Acc1) :-
+parseValueList([V0|_], [], Value0, Value1, Acc0, Acc1) :-
   NewAcc0 is Acc0 + V0,
   Value0 is NewAcc0, Value1 is Acc1.
 parseValueList([V0|VL0], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
@@ -189,7 +191,7 @@ parseValueList([V0|VL0], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
   NewAcc1 is Acc1 + V1,
   NewAcc0 = NewAcc1,
   parseValueList(VL0, VL1, Value0, Value1, NewAcc0, NewAcc1).
-parseValueList([V0|VL0], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
+parseValueList([V0|_], [V1|_], Value0, Value1, Acc0, Acc1) :-
   Value0 is Acc0 + V0,
   Value1 is Acc1 + V1.
 parseValueList(VL0, VL1, Value0, Value1, Winner) :-
@@ -201,7 +203,7 @@ parseValueList(VL0, VL1, Value0, Value1, Winner) :-
 % returns 2, if V0 = V1
 valueCmp(V0, V1, 0) :- V0 > V1.
 valueCmp(V0, V1, 1) :- V0 < V1.
-valueCmp(V0, V1, 2).
+valueCmp(_, _, 2). % otherwise they have to be equal
 
 % ListOfMoves : [X1, Y1, X2, Y2] Switch 1 with 2
 valid_moves(GameState, Player, ListOfMoves) :-
@@ -223,10 +225,3 @@ valid_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
   once(playValue([X1, Y1], GameState, CurrV)),
   once(playValue([X2, Y2], NewGameState, NewV)),
   NewV > CurrV.
-
-my_max([], R, R). %end
-my_max([X|Xs], WK, R) :-
-  X > WK, my_max(Xs, X, R). %WK is Carry about
-my_max([X|Xs], WK, R) :-
-  X =< WK, my_max(Xs, WK, R).
-my_max([X|Xs], R) :- my_max(Xs, X, R). %start

@@ -20,7 +20,7 @@ showResult(Points0, Points1, 1) :-
   write(Points1), write(' points vs. '), write(Points0),
   write(' points!'),
   reset_ansi, nl.
-showResult(Points0, Points1, 2) :-
+showResult(Points0, _Points1, 2) :-
   nl,
   set_bg_color(0), set_fg_color(0),
   write('Player 0 and '),
