@@ -183,13 +183,13 @@ value(GameState, Player, Value) :-
   getAllGroupsValues(GameState, G, ListOfVals),
   sort(ListOfVals, SortedVals), reverse(SortedVals, Value).
 
-% Receives 2 lists of group sizes (calculated by value())
+% Receives 2 lists of group sizes (calculated by value)
 % Returns the 2 game results (stops summing when a winner is found
 % or a draw is decided). Winner will store a number representing the
 % end result 2 - Tie; 1 - Player 1 Wins; 2- Player 2 Wins
-parseValueList(VL0, VL1, V1P, V2P, Winner) :-
-    parseValueListN(VL0, VL1, Winner, V1P, Dif),
-    V2P is V1P + Dif.
+parseValueList(VL0, VL1, VP0, VP1, Winner) :-
+    parseValueListN(VL0, VL1, Winner, VP0, Dif),
+    VP1 is VP0 + Dif.
 parseValueListN([], [], 2, 0, 0). % Tie
 parseValueListN([V0 | VL0], [V1 | VL1], 0, V0, Dif) :- % Player 0 Wins
     V0 > V1,
@@ -197,9 +197,9 @@ parseValueListN([V0 | VL0], [V1 | VL1], 0, V0, Dif) :- % Player 0 Wins
 parseValueListN([V0 | VL0], [V1 | VL1], 1, V0, Dif) :- % Player 1 Wins
     V1 > V0,
     Dif is V1 - V0.
-parseValueListN([V | VL0], [V | VL1], Winner, NAcc, Dif) :- 
+parseValueListN([V | VL0], [V | VL1], Winner, NewAcc, Dif) :- 
     parseValueListN(VL0, VL1, Winner, Acc, Dif),
-    NAcc is Acc + V.
+    NewAcc is Acc + V.
 
 % ListOfMoves : [X1, Y1, X2, Y2] Switch 1 with 2
 valid_moves(GameState, Player, ListOfMoves) :-
