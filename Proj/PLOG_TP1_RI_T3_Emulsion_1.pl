@@ -204,3 +204,10 @@ valid_move(GameState, Player, [X1, Y1], [X2, Y2]) :-
   once(playValue([X1, Y1], GameState, CurrV)),
   once(playValue([X2, Y2], NewGameState, NewV)),
   NewV > CurrV.
+
+getAIEasyMove(GameState, Player, ResMove) :-
+    valid_moves(GameState, Player, ListOfMoves),
+    selectBestMove(ListOfMoves, ResMove).
+
+selectBestMove(Moves, Res) :-
+
