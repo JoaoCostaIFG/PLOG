@@ -22,7 +22,7 @@ genInitLine([C|L], N, CurrN) :-
 
 % Get 7x7 initial board (checkered)
 initial(Board) :-
-  genInitBoard(Board, 3). % N is 8 - 1 = 7
+  genInitBoard(Board, 4). % N is 8 - 1 = 7
 
 % 15x15
 midGame(Board) :-
