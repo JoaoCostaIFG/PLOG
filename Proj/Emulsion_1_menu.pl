@@ -1,6 +1,9 @@
+%%%%%%%%
+% MENU %
+%%%%%%%%
+
 :-include('Emulsion_1_input.pl').
 
-% MENU %
 menu(GameSettings) :-
   repeat,
     grettingsPanel,

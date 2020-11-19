@@ -1,4 +1,7 @@
+%%%%%%%%%%%%%%%%%%%%
 % GAMESTATE OBJECT %
+%%%%%%%%%%%%%%%%%%%%
+
 make_state(GameSettings, Board, Player, gameState(GameSettings, Length, Board, Player)) :-
   length(Board, Length).
 
@@ -25,9 +28,9 @@ state_insideBounds(gameState(_, Length, _, _), [X, Y]) :-
 state_nth0Board(gameState(_, _, Board, _), [X, Y], Ret) :-
   nth0_matrix(X, Y, Board, Ret).
 
-% Get initial state with 7x7 board (checkered)
+% Get initial state with 8x8 board (checkered)
 initial(GameState) :-
-  genInitBoard(Board, 4), % N is 8 - 1 = 7
+  genInitBoard(Board, 9), % N is 9 - 1 = 8
   InitialPlayer is 0,
   make_state([], Board, InitialPlayer, GameState).
 

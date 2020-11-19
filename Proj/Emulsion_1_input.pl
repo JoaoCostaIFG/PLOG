@@ -1,4 +1,7 @@
+%%%%%%%%%%%%%%%%%%%
 % INPUT FUNCTIONS %
+%%%%%%%%%%%%%%%%%%%
+
 % Using this predicates, the user doesn't need '' around his input
 % or . at the end
 input(Prompt, Input) :-

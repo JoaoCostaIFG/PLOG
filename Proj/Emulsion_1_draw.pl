@@ -1,53 +1,45 @@
+%%%%%%%%%%%
 % DRAWING %
+%%%%%%%%%%%
 
 % draws a given board/GameState on the console
-display_game(Player, GameState) :-
-  print_board(GameState),
+display_game(GameState, Player) :-
+  state_getBoard(GameState, Board),
+  print_board(Board),
   display_player(Player),
   nl.
 
-showResult(Points0, Points1, 0) :-
-  nl,
-  set_bg_color(0), set_fg_color(0),
-  write('Player 0 wins with '),
-  write(Points0), write(' points vs. '), write(Points1),
-  write(' points!'),
-  reset_ansi, nl.
-showResult(Points0, Points1, 1) :-
-  nl,
-  set_bg_color(1), set_fg_color(1),
-  write('Player 1 wins with '),
-  write(Points1), write(' points vs. '), write(Points0),
-  write(' points!'),
-  reset_ansi, nl.
-showResult(Points0, _Points1, 2) :-
-  nl,
-  set_bg_color(0), set_fg_color(0),
-  write('Player 0 and '),
-  set_bg_color(1), set_fg_color(1),
-  write('Player 1 draw'),
-  reset_ansi, write(' with '), write(Points0), write(' points!'),
+%
+% BOARD %
+%
+
+print_topruler(Board) :-
+  write('Y\\X'),
+  print_topruler(Board, 0),
   nl.
+print_topruler([], _).
+print_topruler([L|B], CurrC) :-
+  format('  ~d  ', [CurrC]),
+  NewC is CurrC + 1,
+  print_topruler(B, NewC).
 
-print_board([]).
-print_board([L | B]) :-
-  print_line(L),
-  print_board(B).
+print_board(Board) :- % first line has a top ruler
+  print_topruler(Board),
+  print_board(Board, 0).
+print_board([], _).
+print_board([L | B], CurrL) :-
+  print_line(L, CurrL),
+  NewL is CurrL + 1, % Y number on ruler
+  print_board(B, NewL).
 
-display_player(Player) :-
-  nl,
-  set_bg_color(Player), set_fg_color(Player),
-  write('Player: '), write(Player),
-  reset_ansi.
-
-% ┌───┐
-% │ W │
-% └───┘
-print_line([]).
-print_line(L) :-
-  print_line_top(L), nl,
-  print_line_center(L), nl,
-  print_line_bot(L), nl.
+%   ┌───┐
+% n │ W │
+%   └───┘
+print_line([], _).
+print_line(L, CurrL) :-
+  write('   '), print_line_top(L), nl,
+  format(' ~d ', [CurrL]), print_line_center(L), nl,
+  write('   '), print_line_bot(L), nl.
 
 % prints the top of boxes (cels) of a given line
 print_line_top([]).
@@ -80,6 +72,40 @@ print_cell(C) :-
   put_code(9474), write('\33\[1m'), write(Code), write('\33\[22m'), put_code(9474),
   reset_ansi.
 
+% RESULTS %
+showResult(Points0, Points1, 0) :-
+  nl,
+  set_bg_color(0), set_fg_color(0),
+  format('Player 0 wins with ~d points vs. ~d points!', [Points0, Points1]),
+  reset_ansi, nl.
+showResult(Points0, Points1, 1) :-
+  nl,
+  set_bg_color(1), set_fg_color(1),
+  format('Player 1 wins with ~d points vs. ~d points!', [Points1, Points0]),
+  reset_ansi, nl.
+showResult(Points0, _Points1, 2) :-
+  nl,
+  set_bg_color(0), set_fg_color(0),
+  write('Player 0 and '),
+  set_bg_color(1), set_fg_color(1),
+  write('Player 1 draw'),
+  reset_ansi, format(' with ~d points!', [Points0]),
+  nl.
+
+%
+% PLAYER %
+%
+
+display_player(Player) :-
+  nl,
+  set_bg_color(Player), set_fg_color(Player),
+  format('Player: ~d', [Player]),
+  reset_ansi.
+
+%
+% HELPER %
+%
+
 cell_code(0, ' B ').
 cell_code(1, ' W ').
 cell_fg_color(0, '\33\[34m').
@@ -98,4 +124,3 @@ set_bg_color(C) :-
 
 % resets all ansi escapes
 reset_ansi :- write('\33\[0m').
-

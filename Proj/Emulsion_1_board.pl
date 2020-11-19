@@ -1,6 +1,8 @@
-:-use_module(library(lists)).
-
+%%%%%%%%%
 % BOARD %
+%%%%%%%%%
+
+:-use_module(library(lists)).
 
 % generate NxN initial board
 genInitBoard(Board, N) :-
