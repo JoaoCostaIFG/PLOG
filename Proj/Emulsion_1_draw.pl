@@ -18,7 +18,7 @@ print_topruler(Board) :-
   print_topruler(Board, 0),
   nl.
 print_topruler([], _).
-print_topruler([L|B], CurrC) :-
+print_topruler([_|B], CurrC) :-
   format('  ~d  ', [CurrC]),
   NewC is CurrC + 1,
   print_topruler(B, NewC).
