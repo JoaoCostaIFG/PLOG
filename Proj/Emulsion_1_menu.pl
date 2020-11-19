@@ -7,15 +7,18 @@
 menu(GameSettings) :-
   repeat,
     grettingsPanel,
-    inputNum('Option: ', Op), parseOp(Op, GameSettings).
+    inputNum('Option: ', Op),
+    nl, parseOp(Op, GameSettings).
 
 grettingsPanel :-
+  nl,
   write('Welcome to emulsion!'), nl,
   write('1 - PvP'), nl,
   write('2 - PvAI'), nl,
   write('3 - AIvP'), nl,
   write('4 - AIvAI'), nl,
-  write('0 - Exit'), nl.
+  write('0 - Exit'), nl,
+  nl.
 
 % ret = [p1, p2]
 % p == 0 => player

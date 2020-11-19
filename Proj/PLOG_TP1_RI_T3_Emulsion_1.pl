@@ -240,7 +240,7 @@ parseValueListN([V0|VL0], [V1|VL1], Value0, Value1, Acc, Acc) :-
   NewAcc0 is Acc + V0,
   NewAcc1 is Acc + V1,
   parseValueListN(VL0, VL1, Value0, Value1, NewAcc0, NewAcc1).
-parseValueListN(_, _, Acc0, Acc1, Acc0, Acc1) :- Acc0 \= Acc1, !.
+parseValueListN(_, _, Acc0, Acc1, Acc0, Acc1) :- Acc0 \= Acc1.
 
 % returns 0, if V0 > V1
 % returns 1, if V0 < V1
