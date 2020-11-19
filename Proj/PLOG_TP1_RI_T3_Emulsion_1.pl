@@ -51,12 +51,8 @@ choose_move(GameState, Player, 0, Move) :-
   Move = [X, Y, X1, Y1].
 % Easy AI
 choose_move(GameState, Player, 1, Move) :-
-  valid_moves(GameState, Player, ListOfMoves),
-  % selectBestMove(ListOfMoves, GameState, MoveNested),
-  % improvized list flattening
-  [StartP, EndP] = [0, 0, 1, 0], % TODO
-  [X, Y] = StartP, [X1, Y1] = EndP,
-  Move = [X, Y, X1, Y1],
+  valid_moves(GameState, Player, Moves),
+  ai_getBestMove(GameState, Player, Moves, Move, _),
   ai_moveAnnounce('Easy', Move).
 % Medium AI
 choose_move(GameState, Player, 2, Move) :-
@@ -85,6 +81,21 @@ ai_moveAnnounce(AILevel, [X, Y, X1, Y1]) :-
   format(' - to: ~w', [[X1, Y1]]), nl,
   nl,
   sleep(2).
+
+ai_getBestMove(_, _, [], _, [-1]).
+ai_getBestMove(GameState, Player, [M|Moves], BestMove, Val) :-
+  [StartP, EndP] = M,
+  [X, Y] = StartP, [X1, Y1] = EndP,
+  Move = [X, Y, X1, Y1],
+  move(GameState, Move, NewGameState),
+  value(NewGameState, Player, VL0),
+  ai_getBestMove(GameState, Player, Moves, Move1, VL1),
+  parseValueList(VL0, VL1, VP0, VP1, Winner),
+  ai_getBestMoveChoose(Winner, Move, Move1, VL0, VL1, BestMove, Val).
+  
+ai_getBestMoveChoose(0, Move0, Move1, VL0, VL1, Move0, VL0).
+ai_getBestMoveChoose(1, Move0, Move1, VL0, VL1, Move1, VL1).
+ai_getBestMoveChoose(2, Move0, Move1, VL0, VL1, Move0, VL0).
 
 % check move and do it
 move(GameState, Move, NewGameState) :-
@@ -196,6 +207,8 @@ value(GameState, Player, Value) :-
 % Returns the 2 game results (stops summing when a winner is found
 % or a draw is decided). Winner will store a number representing the
 % end result 2 - Tie; 1 - Player 1 Wins; 2- Player 2 Wins
+% TODO IMP isto nao funciona
+% parseValueList([2,1], [2], A, B, C).
 parseValueList(VL0, VL1, VP0, VP1, Winner) :-
     parseValueListN(VL0, VL1, Winner, VP0, Dif),
     VP1 is VP0 + Dif.
@@ -206,9 +219,44 @@ parseValueListN([V0 | VL0], [V1 | VL1], 0, V0, Dif) :- % Player 0 Wins
 parseValueListN([V0 | VL0], [V1 | VL1], 1, V0, Dif) :- % Player 1 Wins
     V1 > V0,
     Dif is V1 - V0.
-parseValueListN([V | VL0], [V | VL1], Winner, NewAcc, Dif) :- 
+parseValueListN([V | VL0], [V | VL1], Winner, NewAcc, Dif) :-
     parseValueListN(VL0, VL1, Winner, Acc, Dif),
     NewAcc is Acc + V.
+
+% parseValueList(VL0, VL1, Value0, Value1, Winner) :-
+  % parseValueList(VL0, VL1, Value0, Value1, 0, 0),
+  % valueCmp(Value0, Value1, Winner).
+% parseValueList([], [], Value0, Value1, Acc0, Acc1) :-
+  % Value0 is Acc0, Value1 is Acc1.
+% parseValueList([], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
+  % NewAcc1 is Acc1 + V1,
+  % Acc0 = NewAcc1,
+  % parseValueList([], VL1, Value0, Value1, Acc0, NewAcc1).
+% parseValueList([], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
+  % NewAcc1 is Acc1 + V1,
+  % Value0 is Acc0, Value1 is NewAcc1.
+% parseValueList([V0|VL0], [], Value0, Value1, Acc0, Acc1) :-
+  % NewAcc0 is Acc0 + V0,
+  % NewAcc0 = Acc1,
+  % parseValueList(VL0, [], Value0, Value1, NewAcc0, Acc1).
+% parseValueList([V0|VL0], [], Value0, Value1, Acc0, Acc1) :-
+  % NewAcc0 is Acc0 + V0,
+  % Value0 is NewAcc0, Value1 is Acc1.
+% parseValueList([V0|VL0], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
+  % NewAcc0 is Acc0 + V0,
+  % NewAcc1 is Acc1 + V1,
+  % NewAcc0 = NewAcc1,
+  % parseValueList(VL0, VL1, Value0, Value1, NewAcc0, NewAcc1).
+% parseValueList([V0|VL0], [V1|VL1], Value0, Value1, Acc0, Acc1) :-
+  % Value0 is Acc0 + V0,
+  % Value1 is Acc1 + V1.
+
+% % returns 0, if V0 > V1
+% % returns 1, if V0 < V1
+% % returns 2, if V0 = V1
+% valueCmp(V0, V1, 0) :- V0 > V1.
+% valueCmp(V0, V1, 1) :- V0 < V1.
+% valueCmp(V0, V1, 2).
 
 % ListOfMoves : [X1, Y1, X2, Y2] Switch 1 with 2
 valid_moves(GameState, Player, ListOfMoves) :-
