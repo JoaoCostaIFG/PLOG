@@ -43,7 +43,7 @@ nth0_matrix(X, Y, Matrix, Elem) :-
   nth0(Y, Matrix, List),
   nth0(X, List, Elem).
 
-switch_spots(Matrix, [X, Y, X1, Y1], NewMatrix) :-
+switch_spots(Matrix, [[X, Y], [X1, Y1]], NewMatrix) :-
   nth0_matrix(X, Y, Matrix, Elem),
   nth0_matrix(X1, Y1, Matrix, Elem1),
   % switch the two spots
