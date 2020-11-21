@@ -62,7 +62,7 @@ choose_move(GameState, Player, 2, Move) :-
 % Hard AI
 choose_move(GameState, Player, 3, Move) :-
   valid_moves(GameState, Player, Moves),
-  ai_getBestMove(GameState, Player, Moves, 6, Move, _),
+  ai_getBestMove(GameState, Player, Moves, 3, Move, _),
   ai_moveAnnounce('SCIENTIA', Move).
 % Random play AI
 choose_move(GameState, Player, 4, Move) :-
@@ -86,7 +86,7 @@ ai_getBestMoveChoose(0, Move0, _, VL0, _, Move0, VL0).
 ai_getBestMoveChoose(1, _, Move1, _, VL1, Move1, VL1).
 ai_getBestMoveChoose(2, Move0, _, VL0, _, Move0, VL0).
 
-ai_getBestMoveNoValidMoves(GameState, AI_Player, Move, [-1]) :-
+ai_getBestMoveNoValidMoves(GameState, AI_Player, Move, [0]) :-
   next_player(AI_Player, NotAI_Player),
   value(GameState, AI_Player, VL0),
   value(GameState, NotAI_Player, VL1),
@@ -154,7 +154,7 @@ ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
 
   % See if valid move has more value
   parseValueList(VL0, VL1, _, _, Winner),
-  ai_getBestMoveChoose(Winner, BestMove0, BestMove1, VL0, VL1, BestMove, Val).
+  ai_getBestMoveChoose(Winner, Move, BestMove1, VL0, VL1, BestMove, Val).
 
 % check move and do it
 move(GameState, Move, NewGameState) :-
