@@ -170,16 +170,16 @@ searchAdjacent([Neighbour | Neighbours], [Neighbour | Res], _State, Vis, NVis) :
   append(CurrRes, NextRes, Res).
 
 calcValue([P | []], L, V) :-
-  L1 is L - 1, getValue(P, V, L1, _).
+  L1 is L - 1, once(getValue(P, V, L1, _)).
 calcValue([P | Coords], L, Res) :-
-  L1 is L - 1, getValue(P, V, L1, _),
+  L1 is L - 1, once(getValue(P, V, L1, _)),
   Res = 1 + V + NRes,
   calcValue(Coords, L, NRes).
 
 pieceValue([X, Y], State, V) :-
-  getAllAdjacent([X, Y], Res, State),
+  setof(Neighbour, connected([X, Y], Neighbour, State), Neighbours),
   state_getLength(State, L),
-  calcValue(Res, L, V).
+  calcValue(Neighbours, L, V).
 
 getAllGroups(_State, _Player, [], [], _Visited).
 getAllGroups(State, Player, [G|Groups], [C|Coords], Visited) :-
