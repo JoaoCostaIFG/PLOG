@@ -133,7 +133,7 @@ adjacent(Point1, Point2, Directions) :-
   member(Direction, Directions),
   coordMove(Point1, Direction, Point2).
 
-% getValue([X, Y],  Last index, [Dirs])
+% conDir([X, Y],  Last index, [Dirs])
 conDir([0,  0 ],    _L,         ['s', 'e']).
 conDir([0,  _L],    _L,         ['n', 'e']).
 conDir([_L, 0 ],    _L,         ['s', 'w']).
@@ -169,17 +169,12 @@ searchAdjacent([Neighbour | Neighbours], [Neighbour | Res], _State, Vis, NVis) :
   searchAdjacent(Neighbours, NextRes, _State, CurrVisited, NVis),
   append(CurrRes, NextRes, Res).
 
-calcValue([P | []], L, V) :-
-  L1 is L - 1, once(getValue(P, V, L1, _)).
-calcValue([P | Coords], L, Res) :-
-  L1 is L - 1, once(getValue(P, V, L1, _)),
-  Res = 1 + V + NRes,
-  calcValue(Coords, L, NRes).
-
 pieceValue([X, Y], State, V) :-
   setof(Neighbour, connected([X, Y], Neighbour, State), Neighbours),
-  state_getLength(State, L),
-  calcValue(Neighbours, L, V).
+  state_getLength(State, L), L1 is L - 1,
+  once(getValue([X, Y], PieceVal, L1, _)),
+  length(Neighbours, NeighbNum), % Neighbours includes [X, Y] (do - 1)
+  V is (NeighbNum - 1) + PieceVal.
 
 getAllGroups(_State, _Player, [], [], _Visited).
 getAllGroups(State, Player, [G|Groups], [C|Coords], Visited) :-
@@ -248,7 +243,7 @@ valid_move(GameState, [P1, P2], NewGameState) :-
   state_getBoard(GameState, CurrentBoard),
   once(switch_spots(CurrentBoard, [P1, P2] , NewBoard)),
   state_setBoard(NewBoard, GameState, NewGameState),
-  once(pieceValue(P1, GameState, CurrV)),
-  once(pieceValue(P2, NewGameState, NewV)),
+  pieceValue(P1, GameState, CurrV),
+  pieceValue(P2, NewGameState, NewV),
   NewV > CurrV.
 
