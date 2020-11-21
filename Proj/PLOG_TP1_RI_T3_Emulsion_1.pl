@@ -56,10 +56,14 @@ choose_move(GameState, Player, 1, Move) :-
   ai_moveAnnounce('Easy', Move).
 % Medium AI
 choose_move(GameState, Player, 2, Move) :-
-  Move = [0, 0, 1, 0].
+  valid_moves(GameState, Player, Moves),
+  ai_getBestMove(GameState, Player, Moves, 2, Move, _),
+  ai_moveAnnounce('Medium', Move).
 % Hard AI
 choose_move(GameState, Player, 3, Move) :-
-  Move = [0, 0, 1, 0].
+  valid_moves(GameState, Player, Moves),
+  ai_getBestMove(GameState, Player, Moves, 6, Move, _),
+  ai_moveAnnounce('SCIENTIA', Move).
 % Random play AI
 choose_move(GameState, Player, 4, Move) :-
   valid_moves(GameState, Player, Moves),
@@ -82,13 +86,75 @@ ai_getBestMoveChoose(0, Move0, _, VL0, _, Move0, VL0).
 ai_getBestMoveChoose(1, _, Move1, _, VL1, Move1, VL1).
 ai_getBestMoveChoose(2, Move0, _, VL0, _, Move0, VL0).
 
+ai_getBestMoveNoValidMoves(GameState, AI_Player, Move, [-1]) :-
+  next_player(AI_Player, NotAI_Player),
+  value(GameState, AI_Player, VL0),
+  value(GameState, NotAI_Player, VL1),
+  parseValueList(VL0, VL1, _, _, NotAI_Player).
+  %write(AI_Player), write(Winner),
+  %write('MOVE BAD:(:(.'), write(Move), write('\n').
+% TODO 999999?
+ai_getBestMoveNoValidMoves(GameState, AI_Player, Move, [99999]) :-
+  next_player(AI_Player, NotAI_Player),
+  value(GameState, AI_Player, VL0),
+  value(GameState, NotAI_Player, VL1),
+  parseValueList(VL0, VL1, _, _, AI_Player).
+  %write(AI_Player), write(Winner),
+  %write('MOVE GUD!!!!'), write(Move), write('\n'),
+
 ai_getBestMove(_, _, [], _, _, []).
-ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
+ai_getBestMove(GameState, Player, [Move|Moves], 1, BestMove, Val) :-
   move(GameState, Move, NewGameState),
   value(NewGameState, Player, VL0),
   ai_getBestMove(GameState, Player, Moves, Level, Move1, VL1),
   parseValueList(VL0, VL1, _, _, Winner),
   ai_getBestMoveChoose(Winner, Move, Move1, VL0, VL1, BestMove, Val).
+ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
+  once(move(GameState, Move, NewGameState)),
+
+  % Enemy has no moves
+  next_player(Player, NPlayer),
+  \+ once(valid_moves(NewGameState, NPlayer, EnemyMoves)),
+  ai_getBestMoveNoValidMoves(NewGameState, Player, Move, VL0),
+
+  ai_getBestMove(GameState, Player, Moves, Level, Move1, VL1),
+  parseValueList(VL0, VL1, _, _, Winner),
+  ai_getBestMoveChoose(Winner, Move, Move1, VL0, VL1, BestMove, Val).
+ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :- % TODO
+  once(move(GameState, Move, NewGameState)),
+
+  next_player(Player, NPlayer),
+  once(valid_moves(NewGameState, NPlayer, EnemyMoves)),
+  once(ai_getBestMove(NewGameState, NPlayer, EnemyMoves, 1, BestEnemyMove, _)),
+  once(move(NewGameState, BestEnemyMove, NewEnemyGameState)),
+
+  \+once(valid_moves(NewEnemyGameState, Player, NewMoves)),
+  ai_getBestMoveNoValidMoves(NewEnemyGameState, Player, Move, VL0),
+  ai_getBestMove(GameState, Player, Moves, Level, Move1, VL1),
+  parseValueList(VL0, VL1, _, _, Winner),
+  ai_getBestMoveChoose(Winner, Move, Move1, VL0, VL1, BestMove, Val).
+ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
+  % Do one of valid moves
+  move(GameState, Move, NewGameState),
+
+  % Choose best choice for enemy
+  next_player(Player, NPlayer),
+  valid_moves(NewGameState, NPlayer, EnemyMoves),
+  ai_getBestMove(NewGameState, NPlayer, EnemyMoves, 1, BestEnemyMove, _),
+  % Play that choice
+  move(NewGameState, BestEnemyMove, NewEnemyGameState),
+
+  % get best move level - 1
+  valid_moves(NewEnemyGameState, Player, NewMoves),
+  NLevel is Level - 1,
+  ai_getBestMove(NewEnemyGameState, Player, NewMoves, NLevel, BestMove0, VL0),
+
+  % do rest of valid moves
+  ai_getBestMove(GameState, Player, Moves, Level, BestMove1, VL1),
+
+  % See if valid move has more value
+  parseValueList(VL0, VL1, _, _, Winner),
+  ai_getBestMoveChoose(Winner, BestMove0, BestMove1, VL0, VL1, BestMove, Val).
 
 % check move and do it
 move(GameState, Move, NewGameState) :-
