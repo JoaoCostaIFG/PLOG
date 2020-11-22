@@ -114,6 +114,32 @@ pertencentes a **[0, N[**) e uma direção: **n**, **nw**, **w**, **sw**, **s**,
 
 ### Jogada do computador
 
+A jogada a efetuar pelo computador é gerada pelo predicado 
+`ai_getBestMove(+GameState, +Player, +Moves, +Level, -BestMove, -Val)`,
+chamada por `choose_move`. O Level atribuido a `ai_getBestMove` representa
+o nũmero de jogadas subsequentes que a AI vai analisar, ou seja, a profundidade
+da árvore de pesquisa que irá ser gerada ao longo do predicado.
+Este valor é dependente do nível de dificuldade da inteligência artifical
+definido no ínicio do jogo - Easy corresponde a Level 1, Medium a 2 e por último
+Hard a 3.
+
+Quando o Level a analisar é 1, o predicado `ai_getBestMove` resume-se a retornar,
+do conjunto de movimentos dado - Moves, o que contribui para a pontuação final no
+momento do AI.
+
+Para Levels superiores, o predicado `ai_getBestMove` gera a melhor jogada com Level 1
+que o inimigo pode fazer, joga-a, e de seguida gera um novo conjunto de jogadas válidas
+com o novo estado do tabuleiro conseguido. Posteriormente, chama recursivamente o predicado
+com as novas jogadas possíveis geradas e o novo tabuleiro, com Level decrescido de 1. Este
+conjunto de regras é responsável por construir um novo ramo com uma árvore nova com profundidade
+Level - 1. Por último, é usado o melhor valor obtido proveniente da chamada recursiva feita anteriormente
+para comparar com os restantes movimentos dados, feita a escolha do movimento que maximiza o valor
+nos ramos final da àrvore.
+
+É de notar que a geração de novos movimentos falhe, quando não existirem novos movimentos possíveis.
+Neste caso, o predicado `ai_getBestMove` calcula o vencedor e maximiza o valor do movimento
+caso a AI. Caso contrário, minimiza o valor do movimento de forma a ser a última escolha da AI.
+
 ## Conclusões
 
 ## Bibliografia
