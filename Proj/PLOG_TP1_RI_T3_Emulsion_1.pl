@@ -35,7 +35,7 @@ game_over(GameState, Winner) :-
   \+valid_moves(GameState, Player, _),
   value(GameState, 0, VL0), value(GameState, 1, VL1),
   parseValueList(VL0, VL1, V0, V1, Winner),
-  showResult(V0, V1, Winner).
+  show_result(V0, V1, Winner, Player).
 
 % Player move
 choose_move(GameState, Player, 0, Move) :-

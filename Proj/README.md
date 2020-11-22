@@ -98,15 +98,28 @@ A aplicação possui um sistema de _menus_ para escolha do modo de jogo e, caso 
 necessário, escolha da dificuldade/nível do _AI_. Na seguinte imagem, podemos
 ver um exemplo de interação de um jogador com o _menu_.
 
-![Menu interaction](img/menu.png)
+![Interacao com menu](img/menu.png)
 
 ### Lista de jogadas válidas
 
 ### Execução de jogadas
 
+As jogadas são do utilizador são lidas com o predicado
+`choose_move(+GameState, +Player, +Level, -Move)`. Este predicado é também usado
+para gerar uma jogada do _AI_ (discutida mais em _Jogada do computador_). Para
+ler uma jogada do utilizador, o `Level` deve ser 0 (correspondendo assim às
+opções de jogo descritas atrás para _player_).
+
 O jogador insere as coordenadas da peça sobre a qual quer jogar (**X** e **Y**
 pertencentes a **[0, N[**) e uma direção: **n**, **nw**, **w**, **sw**, **s**,
 **se**, **e** ou **ne**.
+
+![Jogada do utilizador](img/menu.png)
+
+Uma jogada é considerada válida quando a peça selecionada é do jogador em questão
+(da sua cor) e a direção escolhida resulta numa troca com uma peça do outro
+jogador (cor oposta). Para além disto, a troca tem de causar um aumento no
+**valor** da peça em questão.
 
 ### Final do jogo
 

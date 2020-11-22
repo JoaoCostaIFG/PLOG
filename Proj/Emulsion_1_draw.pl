@@ -73,23 +73,21 @@ print_cell(C) :-
   reset_ansi.
 
 % RESULTS %
-showResult(Points0, Points1, 0) :-
+% helps sending the correct victory information to the show_result/3 predicate
+show_result(V0, V1, 0, _) :- show_result(V0, V1, 0).
+show_result(V0, V1, 1, _) :- show_result(V1, V0, 1).
+show_result(V0, V1, 2, 0) :- show_result(V1, V0, 1).
+show_result(V0, V1, 2, 1) :- show_result(V0, V1, 0).
+% shows a small victory screen on the game ends
+show_result(WinnerPoints, LoserPoints, Winner) :-
   nl,
-  set_bg_color(0), set_fg_color(0),
-  format('Player 0 wins with ~d points vs. ~d points!', [Points0, Points1]),
-  reset_ansi, nl.
-showResult(Points0, Points1, 1) :-
-  nl,
-  set_bg_color(1), set_fg_color(1),
-  format('Player 1 wins with ~d points vs. ~d points!', [Points1, Points0]),
-  reset_ansi, nl.
-showResult(Points0, _Points1, 2) :-
-  nl,
-  set_bg_color(0), set_fg_color(0),
-  write('Player 0 and '),
-  set_bg_color(1), set_fg_color(1),
-  write('Player 1 draw'),
-  reset_ansi, format(' with ~d points!', [Points0]),
+  write('==============================================='), nl,
+  write('=             The game has ended!             ='), nl,
+  write('==============================================='), nl,
+  write('= '),
+  set_bg_color(Winner), set_fg_color(Winner),
+  format('Player ~d', [Winner]), reset_ansi,
+  format(' wins with ~d points vs. ~d points!', [WinnerPoints, LoserPoints]),
   nl.
 
 %
