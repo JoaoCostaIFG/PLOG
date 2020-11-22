@@ -127,6 +127,34 @@ jogador (cor oposta). Para além disto, a troca tem de causar um aumento no
 
 ### Jogada do computador
 
+A jogada a efetuar pelo computador é gerada pelo predicado
+`ai_getBestMove(+GameState, +Player, +Moves, +Level, -BestMove, -Val)`,
+chamado por `choose_move(+GameState, +Player, +Level, -Move)`. O valor de `Level`
+em `ai_getBestMove` representa o número de jogadas subsequentes que a _AI_ vai
+analisar, ou seja, a profundidade da árvore de pesquisa que irá ser gerada ao
+longo do predicado. Este valor está relacionado com o nível de dificuldade
+escolhido no início do jogo. Maior dificuldade implicada um valor maior para
+`Level`.
+
+Quando o `Level` a analisar é 1, o predicado `ai_getBestMove` resume-se a retornar,
+do conjunto de movimentos dado, _Moves_, aquele que mais contribui para a pontuação
+do _AI_.
+
+Para `Level` > 1, o predicado `ai_getBestMove` gera a melhor jogada com `Level` 1
+que o inimigo pode fazer, executa-la, e de seguida gera um novo conjunto de jogadas
+válidas com o novo estado do tabuleiro. Posteriormente, chama recursivamente o
+predicado com as novas jogadas possíveis geradas e o novo tabuleiro, com `Level`
+decrescido de 1. Este conjunto de regras é responsável por construir um novo ramo
+com uma nova árvore com profundidade `Level - 1`. Por último, é usado o melhor
+valor obtido proveniente da chamada recursiva feita anteriormente para comparar
+com os restantes movimentos dados, feita a escolha do movimento que maximiza o
+valor nos ramos final da árvore.
+
+É de notar que, caso a geração de novos movimentos falha quando não existem
+novos movimentos possíveis. Neste caso, o predicado `ai_getBestMove` calcula o
+vencedor e maximiza o valor do movimento da _AI_. Caso contrário, minimiza o
+valor do movimento de forma a ser a última escolha da _AI_.
+
 ## Conclusões
 
 ## Bibliografia
