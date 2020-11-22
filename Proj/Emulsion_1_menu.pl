@@ -22,7 +22,7 @@ grettingsPanel :-
 
 % ret = [p1, p2]
 % p == 0 => player
-% p >= 1 => AI difficulty (1 -> random, 2 -> greedy)
+% p >= 1 => AI difficulty (1 -> easy, 2 -> medium, 3 -> hard, 4 -> random)
 parseOp(1, [0, 0]).
 parseOp(2, [0, Dif]) :- getDifficulty(Dif).
 parseOp(3, [Dif, 0]) :- getDifficulty(Dif).
@@ -39,6 +39,6 @@ getDifficulty(Difficulty) :-
     write('2 - Medium'), nl,
     write('3 - Hard'), nl,
     write('4 - Random play'), nl,
-    inputNum('Difficulty? ', Difficulty),
+    inputNum('Difficulty? ', Difficulty), nl,
     Difficulty >= 1, Difficulty =< 4.
 

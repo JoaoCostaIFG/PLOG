@@ -1,9 +1,24 @@
-# PLOG TP1 RI - T3 Emulsion\_1
+# PLOG TP1 RI - T3 Emulsion_1
 
 ## Identificação dos elementos do grupo
 
 - João de Jesus Costa - up201806560
 - João Lucas Silva Martins - up201806436
+
+## Instalação e execução
+
+Para correr o jogo, é apenas necessário consultar o ficheiro `PLOG_TP1_RI_T3_Emulsion_1.pl`
+e, em seguida, chamar o predicado `play/0`.
+
+### Notas sobre cores e fontes
+
+O nosso programa usa os códigos de escape _ANSI_ para definir/alterar as cores
+do terminal, tanto do _background_, como do _foreground_. É possível que
+alguns emuladores de terminais não reconheçam estes códigos e, por isso, não
+mostrem as diferentes cores.
+
+É necessário o uso de uma fonte com suporte para caracteres **UTF-8**. No
+caso do _sicstus_ no **Windows**, recomendámos a fonte **consolas**.
 
 ## Descrição do jogo
 
@@ -32,7 +47,7 @@ cores diferentes ortogonal ou diagonalmente adjacentes de modo a aumentar
 o **valor** da **peça** da sua cor nesse par.
 
 O jogo termina quando já não existem mais jogadas disponíveis. O vencedor
-é o jogador com mais **pontuação**.  
+é o jogador com maior **pontuação**.  
 Em caso de empate, somamos sucessivamente às pontuações o valor do segundo,
 terceiro, e por aí em diante maiores grupos de cada jogador até o empate
 ser resolvido.  
@@ -40,102 +55,69 @@ Em tabuleiros com tamanho par (N par), é possível que haja um empate mesmo
 depois da soma dos menores grupos. Nestes casos, o jogador que fez a última
 jogada sai vitorioso.
 
-## Repesentação interna do estado do jogo
+## Lógica do jogo
 
-O tabuleiro é representado internamente como uma lista de listas (NxN). Cada
-uma das listas internas representa uma linha do tabuleiro. As peças são
-representadas pelos números **0 e 1**, sendo 0 as peças pretas e 1 as peças
-brancas.
+### Representação interna do estado do jogo
 
-O jogador atual é também representado pelos números **0 e 1**, com o mesmo
-significado que as peças com o mesmo número.
+O estado do jogo, `GameState` é constituído pelos seguintes:
 
-### Escolha da jogada
+- O tabuleiro é representado internamente como uma lista de listas (**NxN**).
+  Cada uma das listas internas representa uma linha do tabuleiro. As peças são
+  representadas pelos números **0 e 1**, sendo 0 as peças pretas e 1 as peças
+  brancas.
+- Tamanho **N** do tabuleiro (calculado quando um tabuleiro é escolhido).
+- As opções de jogo escolhidas no menu (_Player_ ou _AI_ e seu nível) são
+  representas por uma lista com dois números. O primeiro refere o jogador 0 (preto)
+  e o segundo o jogador 1 (branco). Estes números podem ter um dos seguintes
+  significados:
+  - 0 -> player;
+  - 1 -> easy AI;
+  - 2 -> medium AI;
+  - 3 -> hard AI;
+  - 4 -> random AI.
+- O jogador atual é representado pelos números **0 e 1**, com o mesmo significado
+  das peças com a mesma identificação.
 
-O jogador irá inserir as coordenadas da peça sobre a qual quer jogar (X e Y
-pertencentes a [0, N[) e uma direção identificada pelas letras:
-**n**, **nw**, **w**, **sw**, **s**, **se**, **e**, **ne**.
+### Visualização do estado do jogo
 
-## Imagens
+Como o jogador 0 (peças pretas) é sempre o primeiro a jogar, o estado de jogo
+inicial (com o tabuleiro) é representado da seguinte forma:
 
-### Notes about color display
+![Board inicial player 0](img/initial_board.png)
 
-O nosso programa usa os códigos de escape ANSI para definir/alterar as cores
-do terminal, tanto do _background_, como do _foreground_. É possível que
-alguns emuladores de terminais não reconheçam estes códigos e, por isso, não
-mostrem as diferentes cores.
+Existem dois predicados para facilitar o _input_ e seu processamento:
+`input(+Prompt, -Input)` e `inputNum(+Prompt, -Input)`. Estes predicados permitem
+a leitura de _input_ dos jogadores sem um ponto, **.**, no fim. Além disso, linhas
+com espaços também podem ser lidas sem o uso de aspas.  
+Estes predicados são usados sempre que é necessário obter _input_ do utilizador.
+Todo o _input_ lido passa por um processo de validação e o jogador é informado
+quando o seu _input_ for considerado inválido, tendo assim a possibilidade de
+o corrigir.
 
-É necessário o uso de uma fonte com suporte para caracteres **UTF-8**. No
-caso do _sicstus_ no _Windows_, recomendámos a fonte **consolas**.
+A aplicação possui um sistema de _menus_ para escolha do modo de jogo e, caso seja
+necessário, escolha da dificuldade/nível do _AI_. Na seguinte imagem, podemos
+ver um exemplo de interação de um jogador com o _menu_.
 
-### Initial board state
+![Menu interaction](img/menu.png)
 
-```pl
-  GameState = [
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
-  ].
-```
+### Lista de jogadas válidas
 
-![Initial board state](img/initial_board.png)
+### Execução de jogadas
 
-### Mid game board state
+O jogador insere as coordenadas da peça sobre a qual quer jogar (**X** e **Y**
+pertencentes a **[0, N[**) e uma direção: **n**, **nw**, **w**, **sw**, **s**,
+**se**, **e** ou **ne**.
 
-```pl
-  GameState = [
-    [1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
-  ].
-```
+### Final do jogo
 
-![Mid game board state](img/midgame_board.png)
+### Avaliação do tabuleiro
 
-### End board state
+### Jogada do computador
 
-```pl
-  GameState = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
-  ].
-```
+## Conclusões
 
-![End board state](img/end_board.png)
+## Bibliografia
+
+[SICStus Prolog](https://sicstus.sics.se/sicstus/docs/latest4/html/sicstus/)
+
+[SWI-Prolog PlDoc](https://www.swi-prolog.org/pldoc/doc_for?object=manual)
