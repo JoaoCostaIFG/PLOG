@@ -133,28 +133,7 @@ coordMove([X, Y], Direc, [Xn, Yn]) :-
   Xn is X + X_inc,
   Yn is Y + Y_inc.
 
-% VALUES %
-% Base value of a piece on a given board place
-% the number of adjacent pieces needs to be added to this value
-% getValue([X, Y],  Value, Last index, [Dirs])
-getValue([0,  0 ],  1,    _L, ['s', 'e', 'se']).
-getValue([0,  _L],  1,    _L, ['n', 'e', 'ne']).
-getValue([_L, 0 ],  1,    _L, ['s', 'w', 'sw']).
-getValue([_L, _L],  1,    _L, ['n', 'w', 'nw']).
-getValue([_X, 0 ],  0.5,  _L, ['s', 'e', 'w', 'se', 'sw']).
-getValue([_X, _L],  0.5,  _L, ['n', 'e', 'w', 'ne', 'nw']).
-getValue([0,  _Y],  0.5,  _L, ['e', 'n', 's', 'ne', 'ne']).
-getValue([_L, _Y],  0.5,  _L, ['w', 'n', 's', 'nw', 'sw']).
-getValue([_,  _ ],  0,    _L, ['n', 's', 'e', 'w', 'ne', 'se', 'nw', 'sw']).
-
-% returns the value of a piece (base value + number of ortogal neightbors)
-piece_value([X, Y], State, V) :-
-  setof(Neighbour, connected([X, Y], Neighbour, State), Neighbours),
-  state_getLength(State, L), L1 is L - 1,
-  once(getValue([X, Y], PieceVal, L1, _)),
-  length(Neighbours, NeighbNum), % Neighbours includes [X, Y] (do - 1)
-  V is (NeighbNum - 1) + PieceVal.
-
+% PIECES CONNECTIONS %
 % returns the directions from which a connection can possibly
 % be found from a given piece,
 % e.g.: a piece on the top right corner ([0, 0]) can only be connected from south and/or east
@@ -202,6 +181,9 @@ get_all_adjacent([Neighbour | Neighbours], [Neighbour | Res], _State, Vis, NVis)
   get_all_adjacent(Neighbours, NextRes, _State, CurrVisited, NVis),
   append(CurrRes, NextRes, Res).
 
+% returns a list with all groups of a given player.
+% each group is a list of coordinates of pieces of the same color
+% that are ortogonaly connected (recursively)
 getAllGroups(_State, _Player, [], [], _Visited).
 getAllGroups(State, Player, [G|Groups], [C|Coords], Visited) :-
   \+member(C, Visited),
@@ -214,12 +196,36 @@ getAllGroups(State, Player, Groups) :-
   bagof(C, state_nth0Board(State, C, Player), CoordList),
   getAllGroups(State, Player, Groups, CoordList, []).
 
+% VALUES %
+% Base value of a piece on a given board place
+% the number of adjacent pieces needs to be added to this value
+% getValue([X, Y],  Value, Last index, [Dirs])
+getValue([0,  0 ],  1,    _L, ['s', 'e', 'se']).
+getValue([0,  _L],  1,    _L, ['n', 'e', 'ne']).
+getValue([_L, 0 ],  1,    _L, ['s', 'w', 'sw']).
+getValue([_L, _L],  1,    _L, ['n', 'w', 'nw']).
+getValue([_X, 0 ],  0.5,  _L, ['s', 'e', 'w', 'se', 'sw']).
+getValue([_X, _L],  0.5,  _L, ['n', 'e', 'w', 'ne', 'nw']).
+getValue([0,  _Y],  0.5,  _L, ['e', 'n', 's', 'ne', 'ne']).
+getValue([_L, _Y],  0.5,  _L, ['w', 'n', 's', 'nw', 'sw']).
+getValue([_,  _ ],  0,    _L, ['n', 's', 'e', 'w', 'ne', 'se', 'nw', 'sw']).
+
+% returns the value of a piece (base value + number of ortogal neightbors)
+piece_value([X, Y], State, V) :-
+  setof(Neighbour, connected([X, Y], Neighbour, State), Neighbours),
+  state_getLength(State, L), L1 is L - 1,
+  once(getValue([X, Y], PieceVal, L1, _)),
+  length(Neighbours, NeighbNum), % Neighbours includes [X, Y] (do - 1)
+  V is (NeighbNum - 1) + PieceVal.
+
+% converts a list of groups to a list of values of each group
 getAllGroupsValues(_, [], []).
 getAllGroupsValues(State, [G|Groups], [R|Res]) :-
   length(G, R),
   getAllGroupsValues(State, Groups, Res).
 
 % Returns sorted (desc.) list of the values of all groups
+% of a given player
 value(GameState, Player, Value) :-
   getAllGroups(GameState, Player, G),
   getAllGroupsValues(GameState, G, ListOfVals),
@@ -245,6 +251,7 @@ parseValueListN([V0|VL0], [V1|VL1], Value0, Value1, Acc, Acc) :-
   parseValueListN(VL0, VL1, Value0, Value1, NewAcc0, NewAcc1).
 parseValueListN(_, _, Acc0, Acc1, Acc0, Acc1) :- Acc0 \= Acc1.
 
+% used to to choose the winner of the game
 % returns 0, if V0 > V1
 % returns 1, if V0 < V1
 % returns 2, if V0 = V1

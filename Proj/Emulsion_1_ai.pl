@@ -2,7 +2,7 @@
 % AI FUNCTIONS %
 %%%%%%%%%%%%%%%%
 
-% TODO por AI a escolher random play das melhores?
+:-use_module(library(random)).
 
 % show the move the AI will make to the player
 ai_moveAnnounce(AILevel, [P1, P2]) :-
@@ -13,10 +13,12 @@ ai_moveAnnounce(AILevel, [P1, P2]) :-
   nl,
   sleep(2).
 
-%
+% choose the best move (more value) between 2 moves
 ai_getBestMoveChoose(0, Move0, _, VL0, _, Move0, VL0).
 ai_getBestMoveChoose(1, _, Move1, _, VL1, Move1, VL1).
-ai_getBestMoveChoose(2, Move0, _, VL0, _, Move0, VL0).
+ai_getBestMoveChoose(2, Move0, Move1, VL0, VL1, Move, VL) :-
+  random(0, 2, Rdm),
+  ai_getBestMoveChoose(Rdm, Move0, Move1, VL0, VL1, Move, VL).
 
 ai_getBestMoveNoValidMoves(GameState, AI_Player, [0]) :-
   next_player(AI_Player, NotAI_Player),
@@ -62,20 +64,21 @@ ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :- % TODO
   ai_getBestMoveChoose(Winner, Move, Move1, VL0, VL1, BestMove, Val).
 
 ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
-  % Do one of valid moves
+  % execute 1 move
   valid_move(GameState, Move, NewGameState),
-  % Choose best choice for enemy
+  % execute best move for enemy player based on our move
   next_player(Player, NPlayer),
   once(valid_moves(NewGameState, NPlayer, EnemyMoves)),
   ai_getBestMove(NewGameState, NPlayer, EnemyMoves, 1, BestEnemyMove, _),
-  % Play that choice
   valid_move(NewGameState, BestEnemyMove, NewEnemyGameState),
-  % get best move level - 1
+
+  % evalute next level (level - 1)
   valid_moves(NewEnemyGameState, Player, NewMoves),
   NLevel is Level - 1,
   ai_getBestMove(NewEnemyGameState, Player, NewMoves, NLevel, _, VL0),
-  % do rest of valid moves
+
+  % execute rest of valid moves
   ai_getBestMove(GameState, Player, Moves, Level, BestMove1, VL1),
-  % See if valid move has more value
+  % return the most valueable move
   parseValueList(VL0, VL1, _, _, Winner),
   ai_getBestMoveChoose(Winner, Move, BestMove1, VL0, VL1, BestMove, Val).

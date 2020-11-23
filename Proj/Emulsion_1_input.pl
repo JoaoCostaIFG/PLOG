@@ -2,7 +2,13 @@
 % INPUT FUNCTIONS %
 %%%%%%%%%%%%%%%%%%%
 
-% Using this predicates, the user doesn't need '' around his input
+inputAll(10, []).
+inputAll(13, []).
+inputAll(Ch, [Ch | Mais]) :-
+  get_code(Ch1),
+  inputAll(Ch1, Mais).
+
+% Using these predicates, the user doesn't need '' around his input
 % or . at the end
 input(Prompt, Input) :-
   prompt(_, Prompt),
@@ -13,9 +19,3 @@ input(Prompt, Input) :-
 inputNum(Prompt, Input) :-
   input(Prompt, Input),
   number(Input).
-
-inputAll(10, []).
-inputAll(13, []).
-inputAll(Ch, [Ch | Mais]) :-
-  get_code(Ch1),
-  inputAll(Ch1, Mais).
