@@ -35,7 +35,7 @@ game_over(GameState, Winner) :-
   \+valid_moves(GameState, Player, _),
   value(GameState, 0, VL0), value(GameState, 1, VL1),
   parseValueList(VL0, VL1, V0, V1, Winner),
-  showResult(V0, V1, Winner).
+  show_result(V0, V1, Winner, Player).
 
 % Player move
 choose_move(GameState, Player, 0, Move) :-
@@ -110,6 +110,24 @@ ai_getBestMove(GameState, Player, [Move|Moves], 1, BestMove, Val) :-
   parseValueList(VL0, VL1, _, _, Winner),
   ai_getBestMoveChoose(Winner, Move, Move1, VL0, VL1, BestMove, Val).
 ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
+  % Do one of valid moves
+  move(GameState, Move, NewGameState),
+  % Choose best choice for enemy
+  next_player(Player, NPlayer),
+  once(valid_moves(NewGameState, NPlayer, EnemyMoves)),
+  ai_getBestMove(NewGameState, NPlayer, EnemyMoves, 1, BestEnemyMove, _),
+  % Play that choice
+  move(NewGameState, BestEnemyMove, NewEnemyGameState),
+  % get best move level - 1
+  valid_moves(NewEnemyGameState, Player, NewMoves),
+  NLevel is Level - 1,
+  ai_getBestMove(NewEnemyGameState, Player, NewMoves, NLevel, _, VL0),
+  % do rest of valid moves
+  ai_getBestMove(GameState, Player, Moves, Level, BestMove1, VL1),
+  % See if valid move has more value
+  parseValueList(VL0, VL1, _, _, Winner),
+  ai_getBestMoveChoose(Winner, Move, BestMove1, VL0, VL1, BestMove, Val).
+ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
   valid_move(GameState, Move, NewGameState),
 
   % Enemy has no moves
@@ -133,28 +151,6 @@ ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :- % TODO
   ai_getBestMove(GameState, Player, Moves, Level, Move1, VL1),
   parseValueList(VL0, VL1, _, _, Winner),
   ai_getBestMoveChoose(Winner, Move, Move1, VL0, VL1, BestMove, Val).
-ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
-  % Do one of valid moves
-  move(GameState, Move, NewGameState),
-
-  % Choose best choice for enemy
-  next_player(Player, NPlayer),
-  once(valid_moves(NewGameState, NPlayer, EnemyMoves)),
-  ai_getBestMove(NewGameState, NPlayer, EnemyMoves, 1, BestEnemyMove, _),
-  % Play that choice
-  move(NewGameState, BestEnemyMove, NewEnemyGameState),
-
-  % get best move level - 1
-  valid_moves(NewEnemyGameState, Player, NewMoves),
-  NLevel is Level - 1,
-  ai_getBestMove(NewEnemyGameState, Player, NewMoves, NLevel, _, VL0),
-
-  % do rest of valid moves
-  ai_getBestMove(GameState, Player, Moves, Level, BestMove1, VL1),
-
-  % See if valid move has more value
-  parseValueList(VL0, VL1, _, _, Winner),
-  ai_getBestMoveChoose(Winner, Move, BestMove1, VL0, VL1, BestMove, Val).
 
 % check move and do it
 move(GameState, Move, NewGameState) :-
