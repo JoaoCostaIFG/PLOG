@@ -1,154 +1,260 @@
+%%%%%%%%%%%%
+% EMULSION %
+%%%%%%%%%%%%
+
+:-use_module(library(system)).
+:-use_module(library(random)).
+
+:-include('Emulsion_1_ai.pl').
+:-include('Emulsion_1_board.pl').
+:-include('Emulsion_1_draw.pl').
+:-include('Emulsion_1_menu.pl').
+:-include('Emulsion_1_state.pl').
+
 play :-
-  initial(-GameState),
-  Player is 0,
-  display_game(+GameState, +Player),
-  display_player(+Player).
+  menu(GameSettings),
+  initial(InitialState1),
+  state_setSettings(GameSettings, InitialState1, InitialState),
+  state_getPlayer(InitialState, Player),
+  game_loop(Player, InitialState),
+  play. % not sure about this recursion
 
-% generate NxN initial board
-genInitBoard(-GameState, N) :-
-  genInitCol(GameState, N, 1).
-
-genInitCol([], N, N).
-genInitCol([Line|Tab], N, CurrN) :- 
-  CurrN < N,
-  C is mod(CurrN, 2),
-  LineN is N + C - 1,
-  genInitLine(Line, LineN, C),
-  NewN is CurrN + 1,
-  genInitCol(Tab, N, NewN).
-
-genInitLine([], N, N).
-genInitLine([C|L], N, CurrN) :-
-  CurrN < N,
-  C is mod(CurrN, 2),
-  NewN is CurrN + 1,
-  genInitLine(L, N, NewN).
-
-% Get 15x15 initial board (checkered)
-initial(-GameState) :-
-  genInitBoard(-GameState, 16). % N is 16 - 1 = 15
-
-midGame(-GameState) :-
-  GameState = [
-    [1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
-  ].
-
-endGame(-GameState) :-
-  GameState = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
-  ].
-
-% DRAWING %
-display_player(+Player) :-
-  nl,
-  set_bg_color(+Player), set_fg_color(+Player),
-  write('Player: '), write(Player),
-  reset_ansi.
-
-% draws a given board/GameState on the console
-display_game(+GameState, +Player) :-
-  print_board(GameState).
-
-print_board([]).
-print_board([L | B]) :-
-  print_line(L),
-  print_board(B).
-
-% ┌───┐
-% │ W │
-% └───┘
-print_line([]).
-print_line(L) :-
-  print_line_top(L), nl,
-  print_line_center(L), nl,
-  print_line_bot(L), nl.
-
-% prints the top of boxes (cels) of a given line
-print_line_top([]).
-print_line_top([C | L]) :-
-  set_bg_color(+C),
-  set_fg_color(+C),
-  put_code(9484), put_code(9472), put_code(9472), put_code(9472), put_code(9488),
-  reset_ansi,
-  print_line_top(L).
-
-% prints the bottom of boxes (cels) of a given line
-print_line_bot([]).
-print_line_bot([C | L]) :-
-  set_bg_color(+C),
-  set_fg_color(+C),
-  put_code(9492), put_code(9472), put_code(9472), put_code(9472), put_code(9496),
-  reset_ansi,
-  print_line_bot(L).
-
-% prints the center of the boxes (cells) and the cell content of a given line
-print_line_center([]).
-print_line_center([C | L]) :-
-  print_cell(C),
-  print_line_center(L).
-
-% prints the 'center' of a cell
-print_cell(C) :-
-  cell_code(C, Code),
-  set_bg_color(+C), set_fg_color(+C),
-  put_code(9474), write('\33\[1m'), write(Code), write('\33\[22m'), put_code(9474),
-  reset_ansi.
-
-cell_code(0, ' B ').
-cell_code(1, ' W ').
-cell_fg_color(0, '\33\[34m').
-cell_fg_color(1, '\33\[31m').
-cell_bg_color(0, '\33\[40m').
-cell_bg_color(1, '\33\[47m').
-
-% sets the terminal foreground color
-set_fg_color(+C) :-
-  cell_fg_color(C, Color),
-  write(Color).
-% sets the terminal background color
-set_bg_color(+C) :-
-  cell_bg_color(C, Color),
-  write(Color).
-
-% resets all ansi escapes
-reset_ansi :- write('\33\[0m').
+% The game's main loop
+game_loop(Player, CurrentState) :-
+  display_game(CurrentState, Player),
+  game_over(CurrentState, _Winner).
+game_loop(Player, CurrentState) :-
+  repeat,
+    state_getPXSettings(CurrentState, Player, Dif),
+    once(choose_move(CurrentState, Player, Dif, Move)),
+    move(CurrentState, Move, StateAfterMove),
+  state_nextPlayer(StateAfterMove, NextPlayer, NextState), % change player
+  game_loop(NextPlayer, NextState).
 
 % GAME LOGIC %
+% checks if the game is over (no more valid moves for the current player)
+% and shows the winner
+game_over(GameState, Winner) :-
+  state_getPlayer(GameState, Player),
+  \+valid_moves(GameState, Player, _),
+  value(GameState, 0, VL0), value(GameState, 1, VL1),
+  parseValueList(VL0, VL1, V0, V1, Winner),
+  show_result(V0, V1, Winner, Player).
 
-% Switch directions
-direction(0, 'n').
-direction(1, 'nw').
-direction(2, 'w').
-direction(3, 'sw').
-direction(4, 's').
-direction(5, 'se').
-direction(6, 'e').
-direction(7, 'ne').
+% MOVEMENT
+% check if move is valid and execute it
+move(GameState, Move, NewGameState) :-
+  % this is a wrapper for the valid_move/3 predicate that offers more
+  % user interation/friendliness.
+  valid_move(GameState, Move, NewGameState).
+% in case of invalid move
+move(_, _, _) :-
+  write('Invalid move. Try again.'), nl, fail.
+
+% check if a move is inside the game board and increased the value of
+% the player piece
+valid_move(GameState, [P1, P2], NewGameState) :-
+  state_getBoard(GameState, CurrentBoard),
+  once(switch_spots(CurrentBoard, [P1, P2] , NewBoard)),
+  state_setBoard(NewBoard, GameState, NewGameState),
+  piece_value(P1, GameState, CurrV),
+  piece_value(P2, NewGameState, NewV),
+  NewV > CurrV.
+
+% does the same as valid_move, but also checks if the pieces being
+% switched have different colors and below to the correct players
+valid_move_full(GameState, Player, [P1, P2]) :-
+  state_getLength(GameState, L),
+  getValue(P1, _, L, Direcs),
+  next_player(Player, NextPlayer),
+  state_nth0Board(GameState, P1, Player),
+  state_nth0Board(GameState, P2, NextPlayer),
+  adjacent(P1, P2, Direcs),
+  valid_move(GameState, [P1, P2], _).
+
+% returns a list of all the valid moves for the given player on
+% the given board
+% ListOfMoves : [[X1, Y1], [X2, Y2]] Switch coord 1 with 2
+valid_moves(GameState, Player, ListOfMoves) :-
+  setof(Move, valid_move_full(GameState, Player, Move), ListOfMoves).
+
+% gets the next move from a Player or AI
+% Player move
+choose_move(GameState, Player, 0, Move) :-
+  % X & Y
+  nl, write('Select a spot of your color.'), nl,
+  inputNum('X? ', X), inputNum('Y? ', Y),
+  state_insideBounds(GameState, [X, Y]),
+  state_nth0Board(GameState, [X, Y], Player),
+  % Direction
+  input('Move direction [n, nw, w, sw, s, se, e, ne]? ', DirecSymb), nl,
+  coordMove([X, Y], DirecSymb, [X1, Y1]),
+  state_insideBounds(GameState, [X1, Y1]),
+  Move = [[X, Y], [X1, Y1]].
+% Easy AI
+choose_move(GameState, Player, 1, Move) :-
+  valid_moves(GameState, Player, Moves),
+  ai_getBestMove(GameState, Player, Moves, 1, Move, _),
+  ai_moveAnnounce('Easy', Move).
+% Medium AI
+choose_move(GameState, Player, 2, Move) :-
+  valid_moves(GameState, Player, Moves),
+  ai_getBestMove(GameState, Player, Moves, 2, Move, _),
+  ai_moveAnnounce('Medium', Move).
+% Hard AI
+choose_move(GameState, Player, 3, Move) :-
+  valid_moves(GameState, Player, Moves),
+  ai_getBestMove(GameState, Player, Moves, 3, Move, _),
+  ai_moveAnnounce('Hard (SCIENTIA)', Move).
+% Random play AI
+choose_move(GameState, Player, 4, Move) :-
+  valid_moves(GameState, Player, Moves),
+  length(Moves, L), random(0, L, RdmInd),
+  nth0(RdmInd, Moves, Move),
+  ai_moveAnnounce('Random move', Move).
+% in case of invalid move (inputed by the user)
+choose_move(_, _, _, _) :-
+  write('Invalid spot. Try again.'), nl, fail.
+  
+% DIRECTIONS %
+% direction(X,  Y,  DirecSymbol)
+direction(0,    -1, 'n').
+direction(-1,   -1, 'nw').
+direction(-1,   0,  'w').
+direction(-1,   1,  'sw').
+direction(0,    1,  's').
+direction(1,    1,  'se').
+direction(1,    0,  'e').
+direction(1,    -1, 'ne').
+
+% get the next coordinate along a given direction
+coordMove([X, Y], Direc, [Xn, Yn]) :-
+  direction(X_inc, Y_inc, Direc),
+  Xn is X + X_inc,
+  Yn is Y + Y_inc.
+
+% PIECES CONNECTIONS %
+% returns the directions from which a connection can possibly
+% be found from a given piece,
+% e.g.: a piece on the top right corner ([0, 0]) can only be connected from south and/or east
+% con_dir([X, Y],  Last index, [Dirs])
+con_dir([0,  0 ],  _L,         ['s', 'e']).
+con_dir([0,  _L],  _L,         ['n', 'e']).
+con_dir([_L, 0 ],  _L,         ['s', 'w']).
+con_dir([_L, _L],  _L,         ['n', 'w']).
+con_dir([_X, 0 ],  _L,         ['s', 'e', 'w']).
+con_dir([_X, _L],  _L,         ['n', 'e', 'w']).
+con_dir([0,  _Y],  _L,         ['e', 'n', 's']).
+con_dir([_L, _Y],  _L,         ['w', 'n', 's']).
+con_dir([_,  _ ],  _L,         ['n', 's', 'e', 'w']).
+
+% checks if 2 pieces are next to each other
+adjacent(P, P, _).
+adjacent(P1, P2, Directions) :-
+  member(Direction, Directions),
+  coordMove(P1, Direction, P2).
+
+% checks if 2 pieces are adjacent and of the same color
+connected(P1, P2, State) :-
+  state_getLength(State, L),
+  state_insideBounds(State, P1),
+  L1 is L - 1, con_dir(P1, L1, Direcs),
+  adjacent(P1, P2, Direcs),
+  state_insideBounds(State, P2),
+  state_nth0Board(State, P1, Val),
+  state_nth0Board(State, P2, Val).
+
+% returns all pieces connected to the Start piece (of the same color)
+% recursively
+get_all_adjacent(Start, Res, _State) :-
+  setof(Neighbour, connected(Start, Neighbour, _State), Neighbours),
+  get_all_adjacent(Neighbours, Res, _State, [], _).
+get_all_adjacent([], [], _State, Visited, Visited).
+get_all_adjacent([Neighbour | Neighbours], Res, _State, Visited, NVis) :-
+  member(Neighbour, Visited),
+  get_all_adjacent(Neighbours, Res, _State, Visited, NVis).
+get_all_adjacent([Neighbour | Neighbours], [Neighbour | Res], _State, Vis, NVis) :-
+  \+ member(Neighbour, Vis),
+  append(Vis, [Neighbour], TmpVisited),
+  setof(NewNeighbour, connected(Neighbour, NewNeighbour, _State), NewNeighbours),
+  get_all_adjacent(NewNeighbours, CurrRes, _State, TmpVisited, CurrVisited),
+  get_all_adjacent(Neighbours, NextRes, _State, CurrVisited, NVis),
+  append(CurrRes, NextRes, Res).
+
+% returns a list with all groups of a given player.
+% each group is a list of coordinates of pieces of the same color
+% that are ortogonaly connected (recursively)
+getAllGroups(_State, _Player, [], [], _Visited).
+getAllGroups(State, Player, [G|Groups], [C|Coords], Visited) :-
+  \+member(C, Visited),
+  get_all_adjacent(C, G, State),
+  append(Visited, G, NewVisited),
+  getAllGroups(State, Player, Groups, Coords, NewVisited).
+getAllGroups(State, Player, Groups, [_C|Coords], Visited) :- % pop C
+  getAllGroups(State, Player, Groups, Coords, Visited).
+getAllGroups(State, Player, Groups) :-
+  bagof(C, state_nth0Board(State, C, Player), CoordList),
+  getAllGroups(State, Player, Groups, CoordList, []).
+
+% VALUES %
+% Base value of a piece on a given board place
+% the number of adjacent pieces needs to be added to this value
+% getValue([X, Y],  Value, Last index, [Dirs])
+getValue([0,  0 ],  1,    _L, ['s', 'e', 'se']).
+getValue([0,  _L],  1,    _L, ['n', 'e', 'ne']).
+getValue([_L, 0 ],  1,    _L, ['s', 'w', 'sw']).
+getValue([_L, _L],  1,    _L, ['n', 'w', 'nw']).
+getValue([_X, 0 ],  0.5,  _L, ['s', 'e', 'w', 'se', 'sw']).
+getValue([_X, _L],  0.5,  _L, ['n', 'e', 'w', 'ne', 'nw']).
+getValue([0,  _Y],  0.5,  _L, ['e', 'n', 's', 'ne', 'ne']).
+getValue([_L, _Y],  0.5,  _L, ['w', 'n', 's', 'nw', 'sw']).
+getValue([_,  _ ],  0,    _L, ['n', 's', 'e', 'w', 'ne', 'se', 'nw', 'sw']).
+
+% returns the value of a piece (base value + number of ortogal neightbors)
+piece_value([X, Y], State, V) :-
+  setof(Neighbour, connected([X, Y], Neighbour, State), Neighbours),
+  state_getLength(State, L), L1 is L - 1,
+  once(getValue([X, Y], PieceVal, L1, _)),
+  length(Neighbours, NeighbNum), % Neighbours includes [X, Y] (do - 1)
+  V is (NeighbNum - 1) + PieceVal.
+
+% converts a list of groups to a list of values of each group
+getAllGroupsValues(_, [], []).
+getAllGroupsValues(State, [G|Groups], [R|Res]) :-
+  length(G, R),
+  getAllGroupsValues(State, Groups, Res).
+
+% Returns sorted (desc.) list of the values of all groups
+% of a given player
+value(GameState, Player, Value) :-
+  getAllGroups(GameState, Player, G),
+  getAllGroupsValues(GameState, G, ListOfVals),
+  sort(ListOfVals, SortedVals), reverse(SortedVals, Value).
+
+% Receives 2 lists of group sizes (calculated by the value predicate)
+% Returns the 2 final scores (one for each player)
+% Winner will store a number representing the
+% end  0 - Player 0 Wins; 1 - Player 1 Wins; result 2 - Tie;
+parseValueList(VL0, VL1, Value0, Value1, Winner) :-
+  parseValueListN(VL0, VL1, Value0, Value1, 0, 0),
+  valueCmp(Value0, Value1, Winner).
+parseValueListN([], [], Acc0, Acc1, Acc0, Acc1) :- !.
+parseValueListN([], [V1|VL1], Value0, Value1, Acc, Acc) :-
+  NewAcc1 is Acc + V1,
+  parseValueListN([], VL1, Value0, Value1, Acc, NewAcc1).
+parseValueListN([V0|VL0], [], Value0, Value1, Acc, Acc) :-
+  NewAcc0 is Acc + V0,
+  parseValueListN(VL0, [], Value0, Value1, NewAcc0, Acc).
+parseValueListN([V0|VL0], [V1|VL1], Value0, Value1, Acc, Acc) :-
+  NewAcc0 is Acc + V0,
+  NewAcc1 is Acc + V1,
+  parseValueListN(VL0, VL1, Value0, Value1, NewAcc0, NewAcc1).
+parseValueListN(_, _, Acc0, Acc1, Acc0, Acc1) :- Acc0 \= Acc1.
+
+% used to to choose the winner of the game
+% returns 0, if V0 > V1
+% returns 1, if V0 < V1
+% returns 2, if V0 = V1
+valueCmp(V0, V1, 0) :- V0 > V1.
+valueCmp(V0, V1, 1) :- V0 < V1.
+valueCmp(V0, V1, 2) :- V0 = V1.
