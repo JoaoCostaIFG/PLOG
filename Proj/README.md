@@ -87,7 +87,7 @@ inicial (com o tabuleiro) é representado da seguinte forma:
 
 Existem dois predicados para facilitar o _input_ e seu processamento:
 `input(+Prompt, -Input)` e `inputNum(+Prompt, -Input)`. Estes predicados permitem
-a leitura de _input_ dos jogadores sem um ponto, **.**, no fim. Além disso, linhas
+a leitura de _input_ dos jogadores sem um ponto (**.**) no fim. Além disso, linhas
 com espaços também podem ser lidas sem o uso de aspas.  
 Estes predicados são usados sempre que é necessário obter _input_ do utilizador.
 Todo o _input_ lido passa por um processo de validação e o jogador é informado
