@@ -10,12 +10,17 @@
 Para correr o jogo, é apenas necessário consultar o ficheiro `PLOG_TP1_RI_T3_Emulsion_1.pl`
 e, em seguida, chamar o predicado `play/0`.
 
+```pl
+consult('PLOG_TP1_RI_T3_Emulsion_1.pl').
+play.
+```
+
 ### Notas sobre cores e fontes
 
 O nosso programa usa os códigos de escape _ANSI_ para definir/alterar as cores
 do terminal, tanto do _background_, como do _foreground_. É possível que
-alguns emuladores de terminais não reconheçam estes códigos e, por isso, não
-mostrem as diferentes cores.
+alguns emuladores de terminais não reconheçam estes códigos e não mostrem as
+diferentes cores.
 
 É necessário o uso de uma fonte com suporte para caracteres **UTF-8**. No
 caso do _sicstus_ no **Windows**, recomendámos a fonte **consolas**.
@@ -171,7 +176,7 @@ Quando o `Level` a analisar é 1, o predicado `ai_getBestMove` resume-se a retor
 do conjunto de movimentos dado, _Moves_, aquele que mais contribui para a pontuação
 do _AI_.
 
-Para `Level` > 1, o predicado `ai_getBestMove` gera a melhor jogada com `Level` 1
+Para `Level > 1`, o predicado `ai_getBestMove` gera a melhor jogada com `Level` 1
 que o inimigo pode fazer, executa-la, e de seguida gera um novo conjunto de jogadas
 válidas com o novo estado do tabuleiro. Posteriormente, chama recursivamente o
 predicado com as novas jogadas possíveis geradas e o novo tabuleiro, com `Level`

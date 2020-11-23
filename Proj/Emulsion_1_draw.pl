@@ -88,7 +88,7 @@ show_result(WinnerPoints, LoserPoints, Winner) :-
   set_bg_color(Winner), set_fg_color(Winner),
   format('Player ~d', [Winner]), reset_ansi,
   format(' wins with ~d points vs. ~d points!', [WinnerPoints, LoserPoints]),
-  nl.
+  nl, write('==============================================='), nl.
 
 %
 % PLAYER %
