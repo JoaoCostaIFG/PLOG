@@ -87,7 +87,7 @@ choose_move(GameState, Player, 0, Move) :-
   state_insideBounds(GameState, [X, Y]),
   state_nth0Board(GameState, [X, Y], Player),
   % Direction
-  input('Move direction? ', DirecSymb), nl,
+  input('Move direction [n, nw, w, sw, s, se, e, ne]? ', DirecSymb), nl,
   coordMove([X, Y], DirecSymb, [X1, Y1]),
   state_insideBounds(GameState, [X1, Y1]),
   Move = [[X, Y], [X1, Y1]].

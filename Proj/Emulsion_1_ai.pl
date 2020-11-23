@@ -4,6 +4,13 @@
 
 :-use_module(library(random)).
 
+%
+%
+% TODO para n me esquecer. O bloco interno (depois do valid_moves)
+% devia ser separado
+%
+%
+
 % show the move the AI will make to the player
 ai_moveAnnounce(AILevel, [P1, P2]) :-
   nl,
@@ -17,6 +24,7 @@ ai_moveAnnounce(AILevel, [P1, P2]) :-
 ai_getBestMoveChoose(0, Move0, _, VL0, _, Move0, VL0).
 ai_getBestMoveChoose(1, _, Move1, _, VL1, Move1, VL1).
 ai_getBestMoveChoose(2, Move0, Move1, VL0, VL1, Move, VL) :-
+  % if 2 choices with the same value come up, we choose a random one
   random(0, 2, Rdm),
   ai_getBestMoveChoose(Rdm, Move0, Move1, VL0, VL1, Move, VL).
 
