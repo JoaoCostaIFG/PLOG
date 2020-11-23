@@ -2,6 +2,7 @@
 % EMULSION %
 %%%%%%%%%%%%
 
+:-use_module(library(between)).
 :-use_module(library(system)).
 :-use_module(library(random)).
 
@@ -17,7 +18,7 @@ play :-
   state_setSettings(GameSettings, InitialState1, InitialState),
   state_getPlayer(InitialState, Player),
   game_loop(Player, InitialState),
-  play. % not sure about this recursion
+  play. % loop the game until the user closes it
 
 % The game's main loop
 game_loop(Player, CurrentState) :-
@@ -76,7 +77,7 @@ valid_move_full(GameState, Player, [P1, P2]) :-
 % the given board
 % ListOfMoves : [[X1, Y1], [X2, Y2]] Switch coord 1 with 2
 valid_moves(GameState, Player, ListOfMoves) :-
-  setof(Move, valid_move_full(GameState, Player, Move), ListOfMoves).
+  bagof(Move, valid_move_full(GameState, Player, Move), ListOfMoves).
 
 % gets the next move from a Player or AI
 % Player move
@@ -199,22 +200,23 @@ getAllGroups(State, Player, Groups) :-
 % VALUES %
 % Base value of a piece on a given board place
 % the number of adjacent pieces needs to be added to this value
-% getValue([X, Y],  Value, Last index, [Dirs])
-getValue([0,  0 ],  1,    _L, ['s', 'e', 'se']).
-getValue([0,  _L],  1,    _L, ['n', 'e', 'ne']).
-getValue([_L, 0 ],  1,    _L, ['s', 'w', 'sw']).
-getValue([_L, _L],  1,    _L, ['n', 'w', 'nw']).
-getValue([_X, 0 ],  0.5,  _L, ['s', 'e', 'w', 'se', 'sw']).
-getValue([_X, _L],  0.5,  _L, ['n', 'e', 'w', 'ne', 'nw']).
-getValue([0,  _Y],  0.5,  _L, ['e', 'n', 's', 'ne', 'ne']).
-getValue([_L, _Y],  0.5,  _L, ['w', 'n', 's', 'nw', 'sw']).
-getValue([_,  _ ],  0,    _L, ['n', 's', 'e', 'w', 'ne', 'se', 'nw', 'sw']).
+% getValue(+[X, Y],   -Value, +Last index, -[Dirs])
+getValue([0,  0 ],    1,      _L, ['s', 'e', 'se']).
+getValue([0,  _L],    1,      _L, ['n', 'e', 'ne']).
+getValue([_L, 0 ],    1,      _L, ['s', 'w', 'sw']).
+getValue([_L, _L],    1,      _L, ['n', 'w', 'nw']).
+getValue([_X, 0 ],    0.5,    _L, ['s', 'e', 'w', 'se', 'sw']) :- L1 is _L - 1, between(1, L1, _X).
+getValue([_X, _L],    0.5,    _L, ['n', 'e', 'w', 'ne', 'nw']) :- L1 is _L - 1, between(1, L1, _X).
+getValue([0,  _Y],    0.5,    _L, ['e', 'n', 's', 'ne', 'ne']) :- L1 is _L - 1, between(1, L1, _Y).
+getValue([_L, _Y],    0.5,    _L, ['w', 'n', 's', 'nw', 'sw']) :- L1 is _L - 1, between(1, L1, _Y).
+getValue([_X, _Y],    0,      _L, ['n', 's', 'e', 'w', 'ne', 'se', 'nw', 'sw']) :-
+  L1 is _L - 1, between(1, L1, _X), between(1, L1, _Y).
 
 % returns the value of a piece (base value + number of ortogal neightbors)
 piece_value([X, Y], State, V) :-
   setof(Neighbour, connected([X, Y], Neighbour, State), Neighbours),
   state_getLength(State, L), L1 is L - 1,
-  once(getValue([X, Y], PieceVal, L1, _)),
+  getValue([X, Y], PieceVal, L1, _),
   length(Neighbours, NeighbNum), % Neighbours includes [X, Y] (do - 1)
   V is (NeighbNum - 1) + PieceVal.
 
