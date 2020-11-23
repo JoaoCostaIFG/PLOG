@@ -123,6 +123,15 @@ jogador (cor oposta). Para além disto, a troca tem de causar um aumento no
 
 ### Final do jogo
 
+A verificação e tratamento da situação de final de jogo é feita pelo predicado
+`game_over(+GameState, -Winner)`.
+
+Este predicado começa por verificar se o jogador atual ainda tem jogadas válidas
+disponíveis. Para isso, faz uso do predicado `valid_moves/3` (discutido
+anteriormente). No caso de já não existirem jogadas válidas, obtém a pontuação
+de cada jogador e verifica qual é o vencedor, mostrando esta informação ao
+utilizador e, em seguida, voltando ao _menu_ principal.
+
 ### Avaliação do tabuleiro
 
 ### Jogada do computador

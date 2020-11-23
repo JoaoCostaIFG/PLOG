@@ -129,7 +129,6 @@ ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
   ai_getBestMoveChoose(Winner, Move, BestMove1, VL0, VL1, BestMove, Val).
 ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
   valid_move(GameState, Move, NewGameState),
-
   % Enemy has no moves
   next_player(Player, NPlayer),
   \+ once(valid_moves(NewGameState, NPlayer, _)),
@@ -140,7 +139,7 @@ ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
   ai_getBestMoveChoose(Winner, Move, Move1, VL0, VL1, BestMove, Val).
 ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :- % TODO
   valid_move(GameState, Move, NewGameState),
-
+  % Enemy has no moves
   next_player(Player, NPlayer),
   once(valid_moves(NewGameState, NPlayer, EnemyMoves)),
   once(ai_getBestMove(NewGameState, NPlayer, EnemyMoves, 1, BestEnemyMove, _)),
