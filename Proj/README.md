@@ -102,14 +102,23 @@ ver um exemplo de interação de um jogador com o _menu_.
 
 ### Lista de jogadas válidas
 
-A lista de jogadas válidas é definida pelo predicado
-`valid_moves(+GameState, +Player, -ListOfMoves) :-
-setof(Move, valid_move_full(GameState, Player, Move), ListOfMoves).`.
-O predicado gera todos os movimentos possíveis através do uso de `setof` e `valid_move_full`.
+A lista de jogadas válidas é obtida com predicado
 
-O predicado `valid_move_full(GameState, Player, [P1, P2])` define se uma jogada é válida (mover
-peça P1 para P2) dentro de um GameState para um Player. Para tal, é verificado que as peças são
-de jogadores diferentes, são adjacentes, e que, a peça P1 aumenta de valor após a jogada.
+```pl
+valid_moves(+GameState, +Player, -ListOfMoves) :-
+  setof(Move, valid_move_full(GameState, Player, Move), ListOfMoves).
+```
+
+Este predicado gera todos os movimentos possíveis através do uso de `setof`
+e `valid_move_full/3`.  O predicado `valid_move_full(GameState, Player, [P1, P2])`
+verifica se uma jogada é válida (mover peça `P1` para `P2`) para um dado jogador
+(`Player`) e estado de jogo (`GameState`). Para tal, é verificado que as duas
+peças envolvidas são de jogadores diferentes, são adjacentes, e que, a peça `P1`
+aumenta de valor após ser deslocado para a posição `P2`.
+
+Nota: um movimento/jogado, `Move`, é uma lista contendo um par de coordenadas.
+O movimento consiste em trocar as posições das peças no par de coordenadas, por
+exemplo, `[[0, 0], [1, 1]]`.
 
 ### Execução de jogadas
 
@@ -140,6 +149,10 @@ disponíveis. Para isso, faz uso do predicado `valid_moves/3` (discutido
 anteriormente). No caso de já não existirem jogadas válidas, obtém a pontuação
 de cada jogador e verifica qual é o vencedor, mostrando esta informação ao
 utilizador e, em seguida, voltando ao _menu_ principal.
+
+Exemplo de ecrã de vitória para o jogador 0:
+
+![Ecrã de vitória](img/victory_screen.png)
 
 ### Avaliação do tabuleiro
 
