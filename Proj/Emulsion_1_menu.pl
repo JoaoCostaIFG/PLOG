@@ -10,9 +10,22 @@ menu(GameSettings) :-
     inputNum('Option: ', Op),
     nl, parseOp(Op, GameSettings).
 
+title :-
+  write('__        __   _                            _'), nl,
+  write('\\ \\      / /__| | ___ ___  _ __ ___   ___  | |_ ___'), nl,
+  write(' \\ \\ /\\ / / _ \\ |/ __/ _ \\| \'_ ` _ \\ / _ \\ | __/ _ \\'), nl,
+  write('  \\ V  V /  __/ | (_| (_) | | | | | |  __/ | || (_) |'), nl,
+  write('   \\_/\\_/ \\___|_|\\___\\___/|_| |_| |_|\\___|  \\__\\___/'), nl,
+  nl,
+  write(' _____                 _     _             _'), nl,
+  write('| ____|_ __ ___  _   _| |___(_) ___  _ __ | |'), nl,
+  write('|  _| | \'_ ` _ \\| | | | / __| |/ _ \\| \'_ \\| |'), nl,
+  write('| |___| | | | | | |_| | \\__ \\ | (_) | | | |_|'), nl,
+  write('|_____|_| |_| |_|\\__,_|_|___/_|\\___/|_| |_(_)'), nl.
+
 grettingsPanel :-
   nl,
-  write('Welcome to emulsion!'), nl,
+  title, nl,
   write('1 - PvP'), nl,
   write('2 - PvAI'), nl,
   write('3 - AIvP'), nl,

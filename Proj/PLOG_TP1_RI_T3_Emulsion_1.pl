@@ -147,11 +147,17 @@ getValue([0,  _Y],  0.5,  _L, ['e', 'n', 's', 'ne', 'ne']).
 getValue([_L, _Y],  0.5,  _L, ['w', 'n', 's', 'nw', 'sw']).
 getValue([_,  _ ],  0,    _L, ['n', 's', 'e', 'w', 'ne', 'se', 'nw', 'sw']).
 
-adjacent(Point, Point, _).
-adjacent(Point1, Point2, Directions) :-
-  member(Direction, Directions),
-  coordMove(Point1, Direction, Point2).
+% returns the value of a piece (base value + number of ortogal neightbors)
+piece_value([X, Y], State, V) :-
+  setof(Neighbour, connected([X, Y], Neighbour, State), Neighbours),
+  state_getLength(State, L), L1 is L - 1,
+  once(getValue([X, Y], PieceVal, L1, _)),
+  length(Neighbours, NeighbNum), % Neighbours includes [X, Y] (do - 1)
+  V is (NeighbNum - 1) + PieceVal.
 
+% returns the directions from which a connection can possibly
+% be found from a given piece,
+% e.g.: a piece on the top right corner ([0, 0]) can only be connected from south and/or east
 % con_dir([X, Y],  Last index, [Dirs])
 con_dir([0,  0 ],  _L,         ['s', 'e']).
 con_dir([0,  _L],  _L,         ['n', 'e']).
@@ -163,8 +169,13 @@ con_dir([0,  _Y],  _L,         ['e', 'n', 's']).
 con_dir([_L, _Y],  _L,         ['w', 'n', 's']).
 con_dir([_,  _ ],  _L,         ['n', 's', 'e', 'w']).
 
-% checks if 2 coordinates are connected ortogonaly by pieces
-% of the same color as them
+% checks if 2 pieces are next to each other
+adjacent(P, P, _).
+adjacent(P1, P2, Directions) :-
+  member(Direction, Directions),
+  coordMove(P1, Direction, P2).
+
+% checks if 2 pieces are adjacent and of the same color
 connected(P1, P2, State) :-
   state_getLength(State, L),
   state_insideBounds(State, P1),
@@ -178,26 +189,18 @@ connected(P1, P2, State) :-
 % recursively
 get_all_adjacent(Start, Res, _State) :-
   setof(Neighbour, connected(Start, Neighbour, _State), Neighbours),
-  search_adjacent(Neighbours, Res, _State, [], _).
-
-search_adjacent([], [], _State, Visited, Visited).
-search_adjacent([Neighbour | Neighbours], Res, _State, Visited, NVis) :-
+  get_all_adjacent(Neighbours, Res, _State, [], _).
+get_all_adjacent([], [], _State, Visited, Visited).
+get_all_adjacent([Neighbour | Neighbours], Res, _State, Visited, NVis) :-
   member(Neighbour, Visited),
-  search_adjacent(Neighbours, Res, _State, Visited, NVis).
-search_adjacent([Neighbour | Neighbours], [Neighbour | Res], _State, Vis, NVis) :-
+  get_all_adjacent(Neighbours, Res, _State, Visited, NVis).
+get_all_adjacent([Neighbour | Neighbours], [Neighbour | Res], _State, Vis, NVis) :-
   \+ member(Neighbour, Vis),
   append(Vis, [Neighbour], TmpVisited),
   setof(NewNeighbour, connected(Neighbour, NewNeighbour, _State), NewNeighbours),
-  search_adjacent(NewNeighbours, CurrRes, _State, TmpVisited, CurrVisited),
-  search_adjacent(Neighbours, NextRes, _State, CurrVisited, NVis),
+  get_all_adjacent(NewNeighbours, CurrRes, _State, TmpVisited, CurrVisited),
+  get_all_adjacent(Neighbours, NextRes, _State, CurrVisited, NVis),
   append(CurrRes, NextRes, Res).
-
-piece_value([X, Y], State, V) :-
-  setof(Neighbour, connected([X, Y], Neighbour, State), Neighbours),
-  state_getLength(State, L), L1 is L - 1,
-  once(getValue([X, Y], PieceVal, L1, _)),
-  length(Neighbours, NeighbNum), % Neighbours includes [X, Y] (do - 1)
-  V is (NeighbNum - 1) + PieceVal.
 
 getAllGroups(_State, _Player, [], [], _Visited).
 getAllGroups(State, Player, [G|Groups], [C|Coords], Visited) :-
