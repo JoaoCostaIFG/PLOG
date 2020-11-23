@@ -102,6 +102,15 @@ ver um exemplo de interação de um jogador com o _menu_.
 
 ### Lista de jogadas válidas
 
+A lista de jogadas válidas é definida pelo predicado
+`valid_moves(+GameState, +Player, -ListOfMoves) :-
+setof(Move, valid_move_full(GameState, Player, Move), ListOfMoves).`.
+O predicado gera todos os movimentos possíveis através do uso de `setof` e `valid_move_full`.
+
+O predicado `valid_move_full(GameState, Player, [P1, P2])` define se uma jogada é válida (mover
+peça P1 para P2) dentro de um GameState para um Player. Para tal, é verificado que as peças são
+de jogadores diferentes, são adjacentes, e que, a peça P1 aumenta de valor após a jogada.
+
 ### Execução de jogadas
 
 As jogadas são do utilizador são lidas com o predicado
