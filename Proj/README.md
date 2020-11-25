@@ -161,6 +161,12 @@ Exemplo de ecrã de vitória para o jogador 0:
 
 ### Avaliação do tabuleiro
 
+A avaliação do tabuleiro é feita através do predicado
+`value(+GameState, +Player, -Value)`. Value é uma lista ordenada do tamanho de todos os
+grupos de um dado player, gerados pelo predicado `getAllGroups(GameState, Player, Groups)`.
+O predicado `getAllGroups` por sua vez gera um conjunto de peças controladas pelo Player e
+através da chamada de `get_all_adjacent` obtém o grupo de cada peça.
+
 ### Jogada do computador
 
 A jogada a efetuar pelo computador é gerada pelo predicado
