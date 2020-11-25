@@ -1,0 +1,18 @@
+Y <- Name
+X <- UserName
+Z <- Age
+G <- Game
+L <- Hours
+M <- Perc
+N <- Categories
+W <- MinAge
+
+whatDoesItDo(UserName) :-
+  player(Categories, UserName, Age), !,
+  \+ ( played(UserName, Game, Hours, Perc),
+          game(Game, Categories, MinAge),
+          MinAge > Age).
+
+whatDoesItDo <- hasInappropriateGames
+
+Todos os utilizadores que nunca jogaram um jogo inadequado para sua idade. Cut verde: basta haver 1 jogo inapropriado para que o jogador seja logo 'flaged'.
