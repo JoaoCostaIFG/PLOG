@@ -107,15 +107,15 @@ ver um exemplo de interação de um jogador com o _menu_.
 
 ### Lista de jogadas válidas
 
-A lista de jogadas válidas é obtida com predicado
+A lista de jogadas válidas é obtida com predicado:
 
 ```pl
 valid_moves(+GameState, +Player, -ListOfMoves) :-
-  setof(Move, valid_move_full(GameState, Player, Move), ListOfMoves).
+  bagof(Move, valid_move_full(GameState, Player, Move), ListOfMoves).
 ```
 
 Este predicado gera todos os movimentos possíveis através do uso de `setof`
-e `valid_move_full/3`.  O predicado `valid_move_full(GameState, Player, [P1, P2])`
+e `valid_move_full/3`. O predicado `valid_move_full(GameState, Player, [P1, P2])`
 verifica se uma jogada é válida (mover peça `P1` para `P2`) para um dado jogador
 (`Player`) e estado de jogo (`GameState`). Para tal, é verificado que as duas
 peças envolvidas são de jogadores diferentes, são adjacentes, e que, a peça `P1`
@@ -162,11 +162,11 @@ Exemplo de ecrã de vitória para o jogador 0:
 ### Avaliação do tabuleiro
 
 A avaliação do tabuleiro é feita através do predicado
-`value(+GameState, +Player, -Value)`. Value é uma lista ordenada do tamanho de
-todos os grupos de um dado player, obtidos com o predicado
-`getAllGroups(GameState, Player, Groups)`. Este predicado gera um conjunto de peças
-controladas pelo `Player` e através da chamada de `get_all_adjacent` obtém o
-grupo de cada peça.
+`value(+GameState, +Player, -Value)`. Value é uma lista com o tamanho de todos
+os grupos de um dado jogador, ordenada descendentemente. Os grupos são obtidos
+com uso do predicado `getAllGroups(GameState, Player, Groups)`. Este predicado
+gera um conjunto de peças controladas pelo `Player` e através da chamada de
+`get_all_adjacent` obtém o grupo de cada peça.
 
 ### Jogada do computador
 
@@ -191,18 +191,27 @@ decrescido de 1. Este conjunto de regras é responsável por construir um novo r
 com uma nova árvore com profundidade `Level - 1`. Por último, é usado o melhor
 valor obtido proveniente da chamada recursiva feita anteriormente para comparar
 com os restantes movimentos dados, feita a escolha do movimento que maximiza o
-valor nos ramos final da árvore.
+valor nos ramos finais da árvore.
 
-É de notar que, caso a geração de novos movimentos falha quando não existem
-novos movimentos possíveis. Neste caso, o predicado `ai_getBestMove` calcula o
-vencedor e maximiza o valor do movimento da _AI_. Caso contrário, minimiza o
-valor do movimento de forma a ser a última escolha da _AI_.
+É de notar que, a geração de novos movimentos falha quando não existem movimentos
+possíveis (`valid_moves`). Neste caso, o predicado `ai_getBestMove` calcula o
+vencedor e atribui um valor à jogada conforme o resultado:
+
+- se o _AI_ vencer, o valor da jogada é o maior possível (melhor resultado possível).
+- caso contrário, o valor da jogada é 0 (valor válido mais baixo possível).
+
+Estes valores ajudam a guiar o _AI_ para evitar escolhas que o levem à derrota
+e dar prioridade aquelas que o fazem vencer.
 
 ## Conclusões
 
-O trabalho encontra-se funcional e atingiu todos os objetivos colocados. O
-maior 'problema' do código é a demora na escolha de jogadas do _AI_ nas
-dificuldades mais altas.
+O trabalho encontra-se funcional e atingiu todos os objetivos colocados.
+
+O maior 'problema' do código é a demora na escolha de jogadas do _AI_ nas
+dificuldades mais altas. Este problema poderia ser resolvido com algumas
+otimizações, por exemplo: 'cuts' verdes, 'alpha beta pruning' ou
+memoazing. Nenhuma destas técnicas foi implementada por falta de tempo
+e não serem consideradas relevantes para os objetivos do projeto.
 
 ## Bibliografia
 

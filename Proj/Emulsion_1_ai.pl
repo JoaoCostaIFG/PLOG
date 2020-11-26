@@ -4,15 +4,6 @@
 
 :-use_module(library(random)).
 
-%
-%
-% TODO para n me esquecer. O bloco interno (depois do valid_moves)
-% devia ser separado
-%
-% Usar move random para enemy em vez de best move
-%
-%
-
 % show the move the AI will make to the player
 ai_moveAnnounce(AILevel, [P1, P2]) :-
   nl,
