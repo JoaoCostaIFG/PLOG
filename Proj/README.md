@@ -162,10 +162,11 @@ Exemplo de ecrã de vitória para o jogador 0:
 ### Avaliação do tabuleiro
 
 A avaliação do tabuleiro é feita através do predicado
-`value(+GameState, +Player, -Value)`. Value é uma lista ordenada do tamanho de todos os
-grupos de um dado player, gerados pelo predicado `getAllGroups(GameState, Player, Groups)`.
-O predicado `getAllGroups` por sua vez gera um conjunto de peças controladas pelo Player e
-através da chamada de `get_all_adjacent` obtém o grupo de cada peça.
+`value(+GameState, +Player, -Value)`. Value é uma lista ordenada do tamanho de
+todos os grupos de um dado player, obtidos com o predicado
+`getAllGroups(GameState, Player, Groups)`. Este predicado gera um conjunto de peças
+controladas pelo `Player` e através da chamada de `get_all_adjacent` obtém o
+grupo de cada peça.
 
 ### Jogada do computador
 
@@ -198,6 +199,10 @@ vencedor e maximiza o valor do movimento da _AI_. Caso contrário, minimiza o
 valor do movimento de forma a ser a última escolha da _AI_.
 
 ## Conclusões
+
+O trabalho encontra-se funcional e atingiu todos os objetivos colocados. O
+maior 'problema' do código é a demora na escolha de jogadas do _AI_ nas
+dificuldades mais altas.
 
 ## Bibliografia
 
