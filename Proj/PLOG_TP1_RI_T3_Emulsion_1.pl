@@ -77,7 +77,7 @@ valid_move_full(GameState, Player, [P1, P2]) :-
 % the given board
 % ListOfMoves : [[X1, Y1], [X2, Y2]] Switch coord 1 with 2
 valid_moves(GameState, Player, ListOfMoves) :-
-  bagof(Move, valid_move_full(GameState, Player, Move), ListOfMoves).
+  findall(Move, valid_move_full(GameState, Player, Move), ListOfMoves).
 
 % gets the next move from a Player or AI
 % Player move
