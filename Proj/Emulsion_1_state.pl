@@ -30,7 +30,7 @@ state_nth0Board(gameState(_, _, Board, _), [X, Y], Ret) :-
 
 % Get initial state with 8x8 board (checkered)
 initial(GameState) :-
-  genInitBoard(Board, 7), % N is 9 - 1 = 8
+  genInitBoard(Board, 9), % N is 9 - 1 = 8
   InitialPlayer is 0,
   make_state([], Board, InitialPlayer, GameState).
 

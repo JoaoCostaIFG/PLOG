@@ -30,7 +30,7 @@ ai_getBestMoveNoValidMoves(GameState, AI_Player, [Points]) :-
   value(GameState, NotAI_Player, VL1),
   parseValueList(VL0, VL1, _, _, Winner),
   ai_getBestMoveNoValidMovesPoints(GameState, Winner, Points).
-ai_getBestMoveNoValidMovesPoints(GameState, 0, 0).
+ai_getBestMoveNoValidMovesPoints(_, 0, 0).
 ai_getBestMoveNoValidMovesPoints(GameState, 1, MaxPoints) :-
   state_getLength(GameState, L), MaxPoints is L * L.
 
@@ -79,7 +79,6 @@ ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :- % TODO
   ai_getBestMoveChoose(Winner, Move, Move1, VL0, VL1, BestMove, Val).
 ai_getBestMove(GameState, Player, [Move|Moves], Level, BestMove, Val) :-
   valid_move(GameState, Move, NewGameState),
-  next_player(Player, NPlayer),
   ai_getBestMoveNoValidMoves(NewGameState, Player, VL0),
 
   once(ai_getBestMove(GameState, Player, Moves, Level, Move1, VL1)),
