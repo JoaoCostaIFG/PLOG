@@ -47,6 +47,11 @@ game_over(GameState, Winner) :-
 move(GameState, Move, NewGameState) :-
   % this is a wrapper for the valid_move/3 predicate that offers more
   % user interation/friendliness.
+  % check if P1 and P2 have different colors
+  [P1, P2] = Move,
+  state_nth0Board(GameState, P1, Color),
+  \+state_nth0Board(GameState, P2, Color),
+  % perform move
   valid_move(GameState, Move, NewGameState).
 % in case of invalid move
 move(_, _, _) :-
@@ -68,8 +73,8 @@ valid_move_full(GameState, Player, [P1, P2]) :-
   state_getLength(GameState, L),
   getValue(P1, _, L, Direcs),
   next_player(Player, NextPlayer),
-  state_nth0Board(GameState, P1, Player),
-  state_nth0Board(GameState, P2, NextPlayer),
+  state_nth0Board(GameState, P1, Player), % check if P1 is player's color
+  state_nth0Board(GameState, P2, NextPlayer), % check if P2 is enemy's color
   adjacent(P1, P2, Direcs),
   valid_move(GameState, [P1, P2], _).
 
@@ -86,7 +91,7 @@ choose_move(GameState, Player, 0, Move) :-
   nl, write('Select a spot of your color.'), nl,
   inputNum('X? ', X), inputNum('Y? ', Y),
   state_insideBounds(GameState, [X, Y]),
-  state_nth0Board(GameState, [X, Y], Player),
+  state_nth0Board(GameState, [X, Y], Player), % check piece color
   % Direction
   input('Move direction [n, nw, w, sw, s, se, e, ne]? ', DirecSymb), nl,
   coordMove([X, Y], DirecSymb, [X1, Y1]),
