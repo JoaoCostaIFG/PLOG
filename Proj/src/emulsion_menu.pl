@@ -2,7 +2,7 @@
 % MENU %
 %%%%%%%%
 
-:-include('Emulsion_1_input.pl').
+:-include('emulsion_input.pl').
 
 menu(GameSettings) :-
   repeat,

@@ -6,11 +6,11 @@
 :-use_module(library(system)).
 :-use_module(library(random)).
 
-:-include('Emulsion_1_ai.pl').
-:-include('Emulsion_1_board.pl').
-:-include('Emulsion_1_draw.pl').
-:-include('Emulsion_1_menu.pl').
-:-include('Emulsion_1_state.pl').
+:-include('emulsion_ai.pl').
+:-include('emulsion_board.pl').
+:-include('emulsion_draw.pl').
+:-include('emulsion_menu.pl').
+:-include('emulsion_state.pl').
 
 play :-
   menu(GameSettings),
