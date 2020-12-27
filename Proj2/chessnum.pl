@@ -18,29 +18,28 @@ valuesCoords([], []).
 valuesCoords([Coord-_ | L1], [Coord | L2]) :-
     valuesCoords(L1, L2).
 
+mapValues(Coords, L) :- mapValues(Coords, L, []).
 mapValues(_, [], _).
 mapValues(Coords, [Coord-V | L1], BlackList) :-
-    value(Coords, Coord, V, NBlackList),
-    append(N)
-    mapValues(Coords, L1).
+    value(Coords, Coord, V, BlackList, BlackListOut),
+    mapValues(Coords, L1, BlackListOut).
 
-abs_kysL(Lower, Upper, L) :-
-    Upper #> Lower,
-    NLower #= Lower + 1,
-    NUpper #= Upper - 1,
-    Length #= Upper - Lower - 1,
-
-    length(NL, Length),
-    length(L, Length),
-    length(LA, Length),
-    domain(NL, NLower, NUpper),
-
-    all_distinct(L),
-    sorting(NL, LA, L).
-abs_between(Lower, Upper, L) :-
-    abs_kysL(Lower, Upper, L).
-abs_between(Upper, Lower, L) :-
-    abs_kysL(Lower, Upper, L).
+% BLACKLIST [C_IN-T-C_OUT, ] T- d, h, v
+is_not_between(_, []).
+is_not_between([X, Y], [[CinX, Y]-v-[CoutX, Y] | L]) :-
+    #\ (
+        (X #> CinX #/\ X #< CoutX)
+        #\/
+        (X #< CinX #/\ X #> CoutX)
+    ),
+    is_not_between(Coord, L).
+is_not_between([X, Y], [[X, CinY]-v-[X, CoutY] | L]) :-
+    #\ (
+        (Y #> CinY #/\ X #< CoutY)
+        #\/
+        (Y #< CinY #/\ Y #> CoutY)
+    ),
+    is_not_between(Coord, L).
 
 % VALUES
 
@@ -52,15 +51,11 @@ valueKing([KX, KY], [X, Y], V) :-
 valueQueen([QX, QY], [X, Y], V) :-
     ((abs(QY - Y) #= abs(QX - X)) #\/ (QX #= X) #\/ (QY #= Y)) #<=> V.
 
-valueRook([RX, RY], [X, Y], 1, BlackListIn, BlackListOut) :- 
-    RX #= X,
-    abs_between(RY, Y, ListY),
-
-
-
-valueRook([RX, RY], [X, Y], 1, BlackListIn, BlackListOut) :- 
+valueRook([RX, RY], [X, Y], 1, BlackList, [RY-v-Y | BlackList]) :- 
+    RX #= X.
+valueRook([RX, RY], [X, Y], 1, BlackList, [RX-h-X | BlackList]) :- 
     RY #= Y.
-valueRook([RX, RY], [X, Y], 0, BlackListIn, BlackListOut).
+valueRook([RX, RY], [X, Y], 0, BlackList, BlackList) :- RX #\= X, RY #\= Y.
 
 
 valueBishop([BX, BY], [X, Y], V) :-
@@ -75,13 +70,12 @@ valuePawn([PX, PY], [X, Y], V) :-
 
 
 value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, V, BlackListIn, BlackListOut) :-
-    valueQueen(Queen, Coord, QueenV),
-    \+ element(_, BlackListIn, Rook), valueRook(Rook, Coord, RookV, BlackListIn, BlackListOut),
-
-    valueBishop(Bishop, Coord, BishopV),
+    valuePawn(Pawn, Coord, PawnV),
     valueKing(King, Coord, KingV),
     valueKnight(Knight, Coord, KnightV),
-    valuePawn(Pawn, Coord, PawnV),
+    is_not_between(Rook, BlackListIn), valueRook(Rook, Coord, RookV, BlackListIn, BlackListOut),
+    valueBishop(Bishop, Coord, BishopV),
+    valueQueen(Queen, Coord, QueenV),
     V #= KingV + QueenV + RookV + BishopV + KnightV + PawnV.
 
 
@@ -103,3 +97,9 @@ chess_num(Values, Coords) :-
 
     formList(Coords, L),
     labeling([], L).
+
+wr(L):-
+    format('K: ~w\tQ: ~w\tR: ~w\tB: ~w\tK: ~w \tP: ~w \n', L).
+
+test :-
+    findall(C, (chess_num([[7, 0]-2], C), wr(C)), L).
