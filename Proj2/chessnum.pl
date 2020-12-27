@@ -18,9 +18,10 @@ valuesCoords([], []).
 valuesCoords([Coord-_ | L1], [Coord | L2]) :-
     valuesCoords(L1, L2).
 
-mapValues(_, []).
-mapValues(Coords, [Coord-V | L1]) :-
-    value(Coords, Coord, V),
+mapValues(_, [], _).
+mapValues(Coords, [Coord-V | L1], BlackList) :-
+    value(Coords, Coord, V, NBlackList),
+    append(N)
     mapValues(Coords, L1).
 
 abs_kysL(Lower, Upper, L) :-
@@ -51,12 +52,15 @@ valueKing([KX, KY], [X, Y], V) :-
 valueQueen([QX, QY], [X, Y], V) :-
     ((abs(QY - Y) #= abs(QX - X)) #\/ (QX #= X) #\/ (QY #= Y)) #<=> V.
 
-valueRook([RX, RY], [X, Y], 1, L) :- 
-    RX #= X.
+valueRook([RX, RY], [X, Y], 1, BlackListIn, BlackListOut) :- 
+    RX #= X,
+    abs_between(RY, Y, ListY),
 
-valueRook([RX, RY], [X, Y], 1, L) :- 
+
+
+valueRook([RX, RY], [X, Y], 1, BlackListIn, BlackListOut) :- 
     RY #= Y.
-valueRook([RX, RY], [X, Y], 0, []).
+valueRook([RX, RY], [X, Y], 0, BlackListIn, BlackListOut).
 
 
 valueBishop([BX, BY], [X, Y], V) :-
@@ -70,9 +74,9 @@ valuePawn([PX, PY], [X, Y], V) :-
     (PY - Y #= 1 #/\ abs(PX - X) #= 1) #<=> V.
 
 
-value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, V) :-
+value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, V, BlackListIn, BlackListOut) :-
     valueQueen(Queen, Coord, QueenV),
-    valueRook(Rook, Coord, RookV, L),
+    \+ element(_, BlackListIn, Rook), valueRook(Rook, Coord, RookV, BlackListIn, BlackListOut),
 
     valueBishop(Bishop, Coord, BishopV),
     valueKing(King, Coord, KingV),
