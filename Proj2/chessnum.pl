@@ -23,16 +23,23 @@ mapValues(Coords, [Coord-V | L1]) :-
     value(Coords, Coord, V),
     mapValues(Coords, L1).
 
+abs_kysL(Lower, Upper, L) :-
+    Upper #> Lower,
+    NLower #= Lower + 1,
+    NUpper #= Upper - 1,
+    Length #= Upper - Lower - 1,
+
+    length(NL, Length),
+    length(L, Length),
+    length(LA, Length),
+    domain(NL, NLower, NUpper),
+
+    all_distinct(L),
+    sorting(NL, LA, L).
 abs_between(Lower, Upper, L) :-
-    Upper #> Lower,
-    NLower #= Lower + 1,
-    NUpper #= Upper - 1,
-    bagof(N, between(NLower, NUpper, N), L).
+    abs_kysL(Lower, Upper, L).
 abs_between(Upper, Lower, L) :-
-    Upper #> Lower,
-    NLower #= Lower + 1,
-    NUpper #= Upper - 1,
-    bagof(N, between(NLower, NUpper, N), L).
+    abs_kysL(Lower, Upper, L).
 
 % VALUES
 
@@ -44,16 +51,13 @@ valueKing([KX, KY], [X, Y], V) :-
 valueQueen([QX, QY], [X, Y], V) :-
     ((abs(QY - Y) #= abs(QX - X)) #\/ (QX #= X) #\/ (QY #= Y)) #<=> V.
 
-rookBlackList([RX, RY], [X, Y]) :-
-    RX #= X,
-    abs_between(RY, Y, L).
-rookBlackList([RX, RY], [X, Y]) :-
-    RY #= Y,
-    abs_between(RX, X, L).
+valueRook([RX, RY], [X, Y], 1, L) :- 
+    RX #= X.
 
-valueRook([RX, RY], [X, Y], 1) :- 
-    rookBlackList([RX, RY], [X, Y]).
-valueRook(_, _, 0).
+valueRook([RX, RY], [X, Y], 1, L) :- 
+    RY #= Y.
+valueRook([RX, RY], [X, Y], 0, []).
+
 
 valueBishop([BX, BY], [X, Y], V) :-
     (abs(BY - Y) #= abs(BX - X)) #<=> V.
@@ -65,11 +69,13 @@ valueKnight([KX, KY], [X, Y], V) :-
 valuePawn([PX, PY], [X, Y], V) :-
     (PY - Y #= 1 #/\ abs(PX - X) #= 1) #<=> V.
 
+
 value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, V) :-
-    valueKing(King, Coord, KingV),
     valueQueen(Queen, Coord, QueenV),
-    valueRook(Rook, Coord, RookV),
+    valueRook(Rook, Coord, RookV, L),
+
     valueBishop(Bishop, Coord, BishopV),
+    valueKing(King, Coord, KingV),
     valueKnight(Knight, Coord, KnightV),
     valuePawn(Pawn, Coord, PawnV),
     V #= KingV + QueenV + RookV + BishopV + KnightV + PawnV.
