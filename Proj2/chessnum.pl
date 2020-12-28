@@ -33,41 +33,41 @@ bigger(N1, N2, N2, N1) :- N1 #< N2.
 is_not_between([X, Y], [CinX, Y2]-h-[CoutX, Y2], V) :-
     bigger(CinX, CoutX, BigX, SmallX),
     % true if is not between
-    #\ (
+    (#\ (
         % true if is between
         Y #= Y2 
         #/\
         X #>= SmallX #/\ X #=< BigX
-    ) #=> V.
-is_not_between([X, Y], [[X2, CinY]-v-[X2, CoutY] | L], V) :-
+    )) #<=> V.
+is_not_between([X, Y], [X2, CinY]-v-[X2, CoutY], V) :-
     bigger(CinY, CoutY, BigY, SmallY),
     % true if is not between
-    #\ (
+    (#\ (
         % true if is between
         X #= X2 
         #/\
         Y #>= SmallY #/\ Y #=< BigY
-    ) #=> V.
-is_not_between([X, Y], [[CinX, CinY]-d-[CoutX, CoutY] | L], V) :-
+    )) #<=> V.
+is_not_between([X, Y], [CinX, CinY]-d-[CoutX, CoutY], V) :-
     bigger(CinX, CoutX, BigX, SmallX),
     bigger(CinY, CoutY, BigY, SmallY),
     % true if is not between
-    #\ (
+    (#\ (
         % true if is between
         abs(X - CinX) #= abs(Y - CinY)
         #/\
         X #>= SmallX #/\ X #=< BigX
         #/\
         Y #>= SmallY #/\ Y #=< BigY
-    ) #=> V.
+    )) #<=> V.
 
 others_is_not_between(_, 1, []).
-others_is_not_between(Conditions, V, [OtherCoord | Others]) :-
-    is_not_between(OtherCoord, Conditions, 1),
-    others_is_not_between(Conditions, V, Others).
-others_is_not_between(Conditions, 0, [OtherCoord | Others]) :-
-    is_not_between(OtherCoord, Conditions, 0),
-    others_is_not_between(Conditions, _, Others).
+others_is_not_between(Condition, V, [OtherCoord | Others]) :-
+    is_not_between(OtherCoord, Condition, 1),
+    others_is_not_between(Condition, V, Others).
+others_is_not_between(Condition, 0, [OtherCoord | Others]) :-
+    is_not_between(OtherCoord, Condition, 0),
+    others_is_not_between(Condition, _, Others).
 
 % VALUES
 % KING
@@ -77,13 +77,13 @@ valueKing([KX, KY], [X, Y], V) :-
 % QUEEN
 valueQueen([QX, QY], [X, Y], V, Others) :-
     QY #= Y,
-    others_is_not_between([[QX, QY]-h-[X, Y]], V, Others).
+    others_is_not_between([QX, QY]-h-[X, Y], V, Others).
 valueQueen([QX, QY], [X, Y], V, Others) :-
     QX #= X,
-    others_is_not_between([[QX, QY]-v-[X, Y]], V, Others).
+    others_is_not_between([QX, QY]-v-[X, Y], V, Others).
 valueQueen([QX, QY], [X, Y], V, Others) :-
     abs(QY - Y) #= abs(QX - X),
-    others_is_not_between([[QX, QY]-d-[X, Y]], V, Others).
+    others_is_not_between([QX, QY]-d-[X, Y], V, Others).
 valueQueen([QX, QY], [X, Y], 0, _) :-
     abs(QY - Y) #\= abs(QX - X), QX #\= X, QY #\= Y.
 
@@ -91,11 +91,11 @@ valueQueen([QX, QY], [X, Y], 0, _) :-
 % if on the same line, attacks is has line of sight (horizontal)
 valueRook([RX, RY], [X, Y], V, Others) :-
     RY #= Y,
-    others_is_not_between([[RX, RY]-h-[X, Y]], V, Others).
+    others_is_not_between([RX, RY]-h-[X, Y], V, Others).
 % if on the same column, attacks is has line of sight (vertical)
 valueRook([RX, RY], [X, Y], V, Others) :-
     RX #= X,
-    others_is_not_between([[RX, RY]-v-[X, Y]], V, Others).
+    others_is_not_between([RX, RY]-v-[X, Y], V, Others).
 % if not on the same line and column, doesn't attack
 valueRook([RX, RY], [X, Y], 0, _) :-
     RX #\= X, RY #\= Y.
@@ -104,7 +104,7 @@ valueRook([RX, RY], [X, Y], 0, _) :-
 % if on the same diagonal, attacks if has line of sight (diagonal)
 valueBishop([BX, BY], [X, Y], V, Others) :-
     abs(BY - Y) #= abs(BX - X),
-    others_is_not_between([[BX, BY]-d-[X, Y]], V, Others).
+    others_is_not_between([BX, BY]-d-[X, Y], V, Others).
 % if not on the same diagonal, doesn't attack
 valueBishop([BX, BY], [X, Y], 0, _) :-
     abs(BY - Y) #\= abs(BX - X).
@@ -126,12 +126,6 @@ value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, V) :-
     valueBishop(Bishop, Coord, BishopV, [King, Queen, Rook, Knight, Pawn]),
     valueQueen(Queen, Coord, QueenV, [King, Rook, Bishop, Knight, Pawn]),
     V #= KingV + QueenV + RookV + BishopV + KnightV + PawnV.
-    %is_not_between(Pawn, BlackListIn), 
-    %is_not_between(King, BlackListIn), 
-    %is_not_between(Knight, BlackListIn), 
-    %is_not_between(Rook, BlackListIn),
-    %is_not_between(Bishop, BlackListOutRook),
-    %is_not_between(Queen, BlackListOutBishop).
 
 chess_num(Values, Coords) :-
     % Definir Coords pecas
@@ -161,13 +155,13 @@ wr(L):-
 wr(_).
 
 test :-
-    findall(C, (chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C)), _).
+    % findall(C, (chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C)), _).
 
     % findall(C, (chess_num([[2, 1]-4, [0, 5]-0, [6, 3]-4, [2, 7]-4], C), wr(C)), _).
 
-    % findall(C, (chess_num([[0, 0]-1, [1, 0]-0, [5, 0]-0, [7, 0]-1, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0, [5, 6]-0, [5, 7]-0, [7, 7]-1], C), wr(C)), _).
+    findall(C, (chess_num([[0, 0]-1, [1, 0]-0, [5, 0]-0, [7, 0]-1, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0, [5, 6]-0, [5, 7]-0, [7, 7]-1], C), wr(C)), _).
 
-     %findall(C, (chess_num([[2, 0]-0, [3, 0]-0, [2, 1]-1, [4, 1]-1, [2, 2]-2, [4, 2]-2,
+    % findall(C, (chess_num([[2, 0]-0, [3, 0]-0, [2, 1]-1, [4, 1]-1, [2, 2]-2, [4, 2]-2,
                            %[2, 3]-3, [4, 3]-3, [2, 4]-4, [4, 4]-4, [6, 7]-0], C), wr(C)), _).
     % findall(C, (chess_num([[0, 0]-0, [7, 0]-0, [0, 6]-0, [0, 7]-0, [6, 7]-0,
     % [2, 2]-1, [3, 2]-1, [4, 2]-1, [5, 2]-1, [2, 3]-1, [3, 3]-1, [4, 3]-1, [5, 3]-1,
