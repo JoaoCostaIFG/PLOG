@@ -42,7 +42,7 @@ is_not_between([X, Y], [[CinX, Y2]-h-[CoutX, Y2] | L]) :-
         % true if is between
         Y #= Y2 
         #/\
-        X #> SmallX #/\ X #< BigX
+        X #>= SmallX #/\ X #=< BigX
     ),
     is_not_between([X, Y], L).
 is_not_between([X, Y], [[X2, CinY]-v-[X2, CoutY] | L]) :-
@@ -52,7 +52,7 @@ is_not_between([X, Y], [[X2, CinY]-v-[X2, CoutY] | L]) :-
         % true if is between
         X #= X2 
         #/\
-        Y #> SmallY #/\ Y #< BigY
+        Y #>= SmallY #/\ Y #=< BigY
     ),
     is_not_between([X, Y], L).
 is_not_between([X, Y], [[CinX, CinY]-d-[CoutX, CoutY] | L]) :-
@@ -63,9 +63,9 @@ is_not_between([X, Y], [[CinX, CinY]-d-[CoutX, CoutY] | L]) :-
         % true if is between
         abs(X - CinX) #= abs(Y - CinY)
         #/\
-        X #> SmallX #/\ X #< BigX
+        X #>= SmallX #/\ X #=< BigX
         #/\
-        Y #> SmallY #/\ Y #< BigY
+        Y #>= SmallY #/\ Y #=< BigY
     ),
     is_not_between([X, Y], L).
 
@@ -142,16 +142,19 @@ valuePawn([PX, PY], [X, Y], V) :-
     (PY - Y #= 1 #/\ abs(PX - X) #= 1) #<=> V.
 
 value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, V, BlackListIn, BlackListOut) :-
-    is_not_between(Pawn, BlackListIn), valuePawn(Pawn, Coord, PawnV),
-    is_not_between(King, BlackListIn), valueKing(King, Coord, KingV),
-    is_not_between(Knight, BlackListIn), valueKnight(Knight, Coord, KnightV),
-    is_not_between(Rook, BlackListIn),
+    valuePawn(Pawn, Coord, PawnV),
+    valueKing(King, Coord, KingV),
+    valueKnight(Knight, Coord, KnightV),
     valueRook(Rook, Coord, RookV, BlackListIn, BlackListOutRook, [King, Queen, Bishop, Knight, Pawn]),
-    is_not_between(Bishop, BlackListOutRook),
     valueBishop(Bishop, Coord, BishopV, BlackListOutRook, BlackListOutBishop, [King, Queen, Rook, Knight, Pawn]),
-    is_not_between(Queen, BlackListOutBishop),
     valueQueen(Queen, Coord, QueenV, BlackListOutBishop, BlackListOut, [King, Rook, Bishop, Knight, Pawn]),
     V #= KingV + QueenV + RookV + BishopV + KnightV + PawnV.
+    %is_not_between(Pawn, BlackListIn), 
+    %is_not_between(King, BlackListIn), 
+    %is_not_between(Knight, BlackListIn), 
+    %is_not_between(Rook, BlackListIn),
+    %is_not_between(Bishop, BlackListOutRook),
+    %is_not_between(Queen, BlackListOutBishop).
 
 chess_num(Values, Coords) :-
     % Definir Coords pecas
