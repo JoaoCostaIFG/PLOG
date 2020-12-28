@@ -92,19 +92,24 @@ valueQueen([QX, QY], [X, Y], 0, _) :-
     abs(QY - Y) #\= abs(QX - X), QX #\= X, QY #\= Y.
 
 % ROOK
+% if on the same line, attacks is has line of sight (horizontal)
 valueRook([RX, RY], [X, Y], V, Others) :-
     RY #= Y,
     others_is_not_between([[RX, RY]-h-[X, Y]], V, Others).
+% if on the same column, attacks is has line of sight (vertical)
 valueRook([RX, RY], [X, Y], V, Others) :-
     RX #= X,
     others_is_not_between([[RX, RY]-v-[X, Y]], V, Others).
+% if not on the same line and column, doesn't attack
 valueRook([RX, RY], [X, Y], 0, _) :-
     RX #\= X, RY #\= Y.
 
 % BISHOP
+% if on the same diagonal, attacks if has line of sight (diagonal)
 valueBishop([BX, BY], [X, Y], V, Others) :-
     abs(BY - Y) #= abs(BX - X),
     others_is_not_between([[BX, BY]-d-[X, Y]], V, Others).
+% if not on the same diagonal, doesn't attack
 valueBishop([BX, BY], [X, Y], 0, _) :-
     abs(BY - Y) #\= abs(BX - X).
 
@@ -163,7 +168,10 @@ test :-
     % findall(C, (chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C)), _).
 
     % findall(C, (chess_num([[2, 1]-4, [0, 5]-0, [6, 3]-4, [2, 7]-4], C), wr(C)), _).
+
     % findall(C, (chess_num([[0, 0]-1, [1, 0]-0, [5, 0]-0, [7, 0]-1, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0, [5, 6]-0, [5, 7]-0, [7, 7]-1], C), wr(C)), _).
+    findall(C, (chess_num([[0, 0]-1, [1, 0]-0, [5, 0]-0], C), wr(C)), _).
+
      %findall(C, (chess_num([[2, 0]-0, [3, 0]-0, [2, 1]-1, [4, 1]-1, [2, 2]-2, [4, 2]-2,
                            %[2, 3]-3, [4, 3]-3, [2, 4]-4, [4, 4]-4, [6, 7]-0], C), wr(C)), _).
     % findall(C, (chess_num([[0, 0]-0, [7, 0]-0, [0, 6]-0, [0, 7]-0, [6, 7]-0,
