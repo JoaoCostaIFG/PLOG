@@ -29,8 +29,9 @@ bigger(N1, N2, N2, N1) :- N1 #< N2.
 
 % BLACKLIST [Cin-T-Cout | _]
 % T: d, h, v
-appendToBlacklist(Elem, BlackList, [Elem | BlackList]) :- \+element(_, BlackList, Elem).
-appendToBlacklist(Elem, BlackList, BlackList) :- element(_, BlackList, Elem).
+% TODO check this
+appendToBlacklist(Elem, BlackList, [Elem | BlackList]) :- \+member(Elem, BlackList).
+appendToBlacklist(Elem, BlackList, BlackList) :- member(Elem, BlackList).
 
 % Checks if we're not obstructing anyone
 is_not_between(_, []).
@@ -68,10 +69,12 @@ is_not_between([X, Y], [[CinX, CinY]-d-[CoutX, CoutY] | L]) :-
     ),
     is_not_between([X, Y], L).
 
-others_is_not_between(_, []).
-others_is_not_between(Conditions, [OtherCoord | Others]) :-
+others_is_not_between(_, 1, []).
+others_is_not_between(Conditions, V, [OtherCoord | Others]) :-
     is_not_between(OtherCoord, Conditions),
-    others_is_not_between(Conditions, Others).
+    others_is_not_between(Conditions, V, Others).
+others_is_not_between(Conditions, 0, [OtherCoord | _]) :-
+    \+is_not_between(OtherCoord, Conditions).
 
 % VALUES
 % KING
@@ -79,37 +82,43 @@ valueKing([KX, KY], [X, Y], V) :-
     (abs(KX - X) #< 2 #/\ abs(KY - Y) #< 2) #<=> V.
 
 % QUEEN
-valueQueen([QX, QY], [X, Y], 1, BlackList, [NewBLEntry | BlackList], Others) :-
+valueQueen([QX, QY], [X, Y], V, BlackList, [NewBLEntry | BlackList], Others) :-
     QY #= Y,
     NewBLEntry = [QX, QY]-h-[X, Y],
-    others_is_not_between([NewBLEntry], Others).
-valueQueen([QX, QY], [X, Y], 1, BlackList, [NewBLEntry | BlackList], Others) :-
+    others_is_not_between([NewBLEntry], V, Others).
+valueQueen([QX, QY], [X, Y], V, BlackList, [NewBLEntry | BlackList], Others) :-
     QX #= X,
     NewBLEntry = [QX, QY]-v-[X, Y],
-    others_is_not_between([NewBLEntry], Others).
-valueQueen([QX, QY], [X, Y], 1, BlackList, [NewBLEntry | BlackList], Others) :-
+    others_is_not_between([NewBLEntry], V, Others).
+valueQueen([QX, QY], [X, Y], V, BlackList, [NewBLEntry | BlackList], Others) :-
     abs(QY - Y) #= abs(QX - X),
     NewBLEntry = [QX, QY]-d-[X, Y],
-    others_is_not_between([NewBLEntry], Others).
+    others_is_not_between([NewBLEntry], V, Others).
 valueQueen([QX, QY], [X, Y], 0, BlackList, BlackList, _).
+% :-
+    % dif(abs(QY - Y), abs(QX - X)), dif(QX, X), dif(QY, Y).
 
 % ROOK
-valueRook([RX, RY], [X, Y], 1, BlackList, [NewBLEntry | BlackList], Others) :-
+valueRook([RX, RY], [X, Y], V, BlackList, [NewBLEntry | BlackList], Others) :-
     RY #= Y,
     NewBLEntry = [RX, RY]-h-[X, Y],
-    others_is_not_between([NewBLEntry], Others).
-valueRook([RX, RY], [X, Y], 1, BlackList, [NewBLEntry | BlackList], Others) :-
+    others_is_not_between([NewBLEntry], V, Others).
+valueRook([RX, RY], [X, Y], V, BlackList, [NewBLEntry | BlackList], Others) :-
     RX #= X,
     NewBLEntry = [RX, RY]-v-[X, Y],
-    others_is_not_between([NewBLEntry], Others).
+    others_is_not_between([NewBLEntry], V, Others).
 valueRook([RX, RY], [X, Y], 0, BlackList, BlackList, _).
+% :-
+    % RX #\= X, RY #\= Y.
 
 % BISHOP
-valueBishop([BX, BY], [X, Y], 1, BlackList, [NewBLEntry | BlackList], Others) :-
+valueBishop([BX, BY], [X, Y], V, BlackList, [NewBLEntry | BlackList], Others) :-
     abs(BY - Y) #= abs(BX - X),
     NewBLEntry = [BX, BY]-d-[X, Y],
-    others_is_not_between([NewBLEntry], Others).
+    others_is_not_between([NewBLEntry], V, Others).
 valueBishop([BX, BY], [X, Y], 0, BlackList, BlackList, _).
+% :-
+    % abs(BY - Y) #\= abs(BX - X).
 
 % KNIGHT
 valueKnight([KX, KY], [X, Y], V) :-
