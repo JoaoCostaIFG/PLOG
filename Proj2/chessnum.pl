@@ -69,8 +69,9 @@ others_is_not_between(_, 1, []).
 others_is_not_between(Conditions, V, [OtherCoord | Others]) :-
     is_not_between(OtherCoord, Conditions),
     others_is_not_between(Conditions, V, Others).
-others_is_not_between(Conditions, 0, [OtherCoord | _]) :-
-    \+is_not_between(OtherCoord, Conditions).
+others_is_not_between(Conditions, 0, [OtherCoord | Others]) :-
+    \+is_not_between(OtherCoord, Conditions),
+    others_is_not_between(Conditions, _, Others).
 
 % VALUES
 % KING
@@ -89,12 +90,6 @@ valueQueen([QX, QY], [X, Y], V, Others) :-
     others_is_not_between([[QX, QY]-d-[X, Y]], V, Others).
 valueQueen([QX, QY], [X, Y], 0, _) :-
     abs(QY - Y) #\= abs(QX - X), QX #\= X, QY #\= Y.
-valueQueen([QX, QY], [X, Y], 0, Others) :-
-    QY #= Y, others_is_not_between([[QX, QY]-h-[X, Y]], 0, Others).
-valueQueen([QX, QY], [X, Y], 0, Others) :-
-    QX #= X, others_is_not_between([[QX, QY]-v-[X, Y]], 0, Others).
-valueQueen([QX, QY], [X, Y], 0, Others) :-
-    abs(QY - Y) #= abs(QX - X), others_is_not_between([[QX, QY]-d-[X, Y]], 0, Others).
 
 % ROOK
 valueRook([RX, RY], [X, Y], V, Others) :-
@@ -105,10 +100,6 @@ valueRook([RX, RY], [X, Y], V, Others) :-
     others_is_not_between([[RX, RY]-v-[X, Y]], V, Others).
 valueRook([RX, RY], [X, Y], 0, _) :-
     RX #\= X, RY #\= Y.
-valueRook([RX, RY], [X, Y], 0, Others) :-
-    RY #= Y, others_is_not_between([[RX, RY]-h-[X, Y]], 0, Others).
-valueRook([RX, RY], [X, Y], 0, Others) :-
-    RX #= X, others_is_not_between([[RX, RY]-v-[X, Y]], 0, Others).
 
 % BISHOP
 valueBishop([BX, BY], [X, Y], V, Others) :-
@@ -116,8 +107,6 @@ valueBishop([BX, BY], [X, Y], V, Others) :-
     others_is_not_between([[BX, BY]-d-[X, Y]], V, Others).
 valueBishop([BX, BY], [X, Y], 0, _) :-
     abs(BY - Y) #\= abs(BX - X).
-valueBishop([BX, BY], [X, Y], 0, Others) :-
-    abs(BY - Y) #= abs(BX - X), others_is_not_between([[BX, BY]-d-[X, Y]], 0, Others).
 
 % KNIGHT
 valueKnight([KX, KY], [X, Y], V) :-
@@ -171,11 +160,14 @@ wr(L):-
 wr(_).
 
 test :-
-    %findall(C, (chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C)), _).
-    %findall(C, (chess_num([[0, 5]-0, [2, 1]-4, [2, 7]-4, [6, 3]-4], C), wr(C)), _).
-    findall(C, (chess_num([[0, 0]-1, [1, 0]-0, [5, 0]-0, [7, 0]-1, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0, [5, 6]-0, [5, 7]-0, [7, 7]-1], C), wr(C)), _).
+    findall(C, (chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C)), _).
+    % findall(C, (chess_num([[2, 1]-4, [0, 5]-0, [6, 3]-4, [2, 7]-4], C), wr(C)), _).
+    % findall(C, (chess_num([[0, 0]-1, [1, 0]-0, [5, 0]-0, [7, 0]-1, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0, [5, 6]-0, [5, 7]-0, [7, 7]-1], C), wr(C)), _).
      %findall(C, (chess_num([[2, 0]-0, [3, 0]-0, [2, 1]-1, [4, 1]-1, [2, 2]-2, [4, 2]-2,
                            %[2, 3]-3, [4, 3]-3, [2, 4]-4, [4, 4]-4, [6, 7]-0], C), wr(C)), _).
+    % findall(C, (chess_num([[0, 0]-0, [7, 0]-0, [0, 6]-0, [0, 7]-0, [6, 7]-0,
+    % [2, 2]-1, [3, 2]-1, [4, 2]-1, [5, 2]-1, [2, 3]-1, [3, 3]-1, [4, 3]-1, [5, 3]-1,
+    % [2, 4]-1, [3, 4]-1, [4, 4]-1, [5, 4]-1], [2, 5]-1, [3, 5]-1, [4, 5]-1, [5, 5]-1], C), wr(C)), _).
 
 ttt(C) :-
     chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C).
