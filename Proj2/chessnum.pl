@@ -128,23 +128,26 @@ value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, V) :-
     V #= KingV + QueenV + RookV + BishopV + KnightV + PawnV.
 
 chess_num(Values, Coords) :-
+    reset_timer,
     % Definir Coords pecas
     Coords = [King, Queen, Rook, Bishop, Knight, Pawn],
     init_coord(King), init_coord(Queen), init_coord(Rook),
     init_coord(Bishop), init_coord(Knight), init_coord(Pawn),
-
     % no overlap
     posList(Coords, PosL1),
     valuesCoords(Values, CValues), % get values coords
     posList(CValues, PosL2),
     append(PosL1, PosL2, NPosL),
-    all_distinct(NPosL),
 
+    all_distinct(NPosL),
     % Valores
     mapValues(Coords, Values),
+    %print_time('Posting Constraints: '),
 
     flattenList(Coords, L),
-    labeling([], L).
+    labeling([ffc, bisect], L),
+    %print_time('Labeling Time: '),
+    fd_statistics, statistics.
 
 
 % THROWAWAY
@@ -169,3 +172,11 @@ test :-
 
 ttt(C) :-
     chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C).
+
+reset_timer:-
+    statistics(total_runtime, _).
+
+print_time(Msg) :-
+    statistics(total_runtime, [_, T]),
+    TS is ((T // 10) * 10) / 1000, nl,
+    write(Msg), write(TS), write('s'), nl, nl.
