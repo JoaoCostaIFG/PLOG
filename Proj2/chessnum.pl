@@ -30,8 +30,7 @@ bigger(N1, N2, N2, N1) :- N1 #< N2.
 % T: d, h, v
 
 % Checks if we're not obstructing anyone
-is_not_between(_, []).
-is_not_between([X, Y], [[CinX, Y2]-h-[CoutX, Y2] | L]) :-
+is_not_between([X, Y], [CinX, Y2]-h-[CoutX, Y2], V) :-
     bigger(CinX, CoutX, BigX, SmallX),
     % true if is not between
     #\ (
@@ -39,9 +38,8 @@ is_not_between([X, Y], [[CinX, Y2]-h-[CoutX, Y2] | L]) :-
         Y #= Y2 
         #/\
         X #>= SmallX #/\ X #=< BigX
-    ),
-    is_not_between([X, Y], L).
-is_not_between([X, Y], [[X2, CinY]-v-[X2, CoutY] | L]) :-
+    ) #=> V.
+is_not_between([X, Y], [[X2, CinY]-v-[X2, CoutY] | L], V) :-
     bigger(CinY, CoutY, BigY, SmallY),
     % true if is not between
     #\ (
@@ -49,9 +47,8 @@ is_not_between([X, Y], [[X2, CinY]-v-[X2, CoutY] | L]) :-
         X #= X2 
         #/\
         Y #>= SmallY #/\ Y #=< BigY
-    ),
-    is_not_between([X, Y], L).
-is_not_between([X, Y], [[CinX, CinY]-d-[CoutX, CoutY] | L]) :-
+    ) #=> V.
+is_not_between([X, Y], [[CinX, CinY]-d-[CoutX, CoutY] | L], V) :-
     bigger(CinX, CoutX, BigX, SmallX),
     bigger(CinY, CoutY, BigY, SmallY),
     % true if is not between
@@ -62,15 +59,14 @@ is_not_between([X, Y], [[CinX, CinY]-d-[CoutX, CoutY] | L]) :-
         X #>= SmallX #/\ X #=< BigX
         #/\
         Y #>= SmallY #/\ Y #=< BigY
-    ),
-    is_not_between([X, Y], L).
+    ) #=> V.
 
 others_is_not_between(_, 1, []).
 others_is_not_between(Conditions, V, [OtherCoord | Others]) :-
-    is_not_between(OtherCoord, Conditions),
+    is_not_between(OtherCoord, Conditions, 1),
     others_is_not_between(Conditions, V, Others).
 others_is_not_between(Conditions, 0, [OtherCoord | Others]) :-
-    \+is_not_between(OtherCoord, Conditions),
+    is_not_between(OtherCoord, Conditions, 0),
     others_is_not_between(Conditions, _, Others).
 
 % VALUES
@@ -160,10 +156,10 @@ wr(L):-
 wr(_).
 
 test :-
-    % findall(C, (chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C)), _).
+     %findall(C, (chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C)), _).
 
     % findall(C, (chess_num([[2, 1]-4, [0, 5]-0, [6, 3]-4, [2, 7]-4], C), wr(C)), _).
-    % findall(C, (chess_num([[0, 0]-1, [1, 0]-0, [5, 0]-0, [7, 0]-1, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0, [5, 6]-0, [5, 7]-0, [7, 7]-1], C), wr(C)), _).
+     findall(C, (chess_num([[0, 0]-1, [1, 0]-0, [5, 0]-0, [7, 0]-1, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0, [5, 6]-0, [5, 7]-0, [7, 7]-1], C), wr(C)), _).
      %findall(C, (chess_num([[2, 0]-0, [3, 0]-0, [2, 1]-1, [4, 1]-1, [2, 2]-2, [4, 2]-2,
                            %[2, 3]-3, [4, 3]-3, [2, 4]-4, [4, 4]-4, [6, 7]-0], C), wr(C)), _).
     % findall(C, (chess_num([[0, 0]-0, [7, 0]-0, [0, 6]-0, [0, 7]-0, [6, 7]-0,
