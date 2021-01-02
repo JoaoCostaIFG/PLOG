@@ -1,5 +1,9 @@
 :-use_module(library(clpfd)).
 :-use_module(library(lists)).
+:-use_module(library(random)).
+
+% N SEI TODO
+>>>>>>> 52563256c739d4347b991f3f6dc8285a0f3a5429
 
 init_coord(L) :-
     length(L, 2),
@@ -7,6 +11,7 @@ init_coord(L) :-
 
 flattenList([], []).
 flattenList([[X, Y] | L], [X, Y | NL]):- flattenList(L, NL).
+flattenList([[X, Y, Z] | L], [X, Y, Z | NL]):- flattenList(L, NL).
 
 elemToID([X, Y], V) :- V #= X + Y * 8.
 posList([], []).
@@ -256,3 +261,51 @@ print_time(Msg) :-
     statistics(total_runtime, [_, T]),
     TS is ((T // 10) * 10) / 1000, nl,
     write(Msg), write(TS), write('s'), nl, nl.
+
+% GEN PROBLEM
+
+selRandom(Var, BB0, BB1) :-
+    fd_set(Var, Set), fdset_to_list(Set, List),
+    random_member(Value, List),
+    (first_bound(BB0, BB1), Var #= Value ;
+     later_bound(BB0, BB1), Var #\= Value).
+
+initValues([]).
+initValues([Coord-Score | Values]) :-
+    length(Coord, 2),
+    domain(Coord, 0, 6),
+    %domain([Score], 0, 7),
+    initValues(Values).
+
+valuesToCoordList([], []).
+valuesToCoordList([[X, Y]-_ | Values], [[X, Y] | L]) :-
+    valuesToCoordList(Values, L).
+valuesToScoreList([], []).
+valuesToScoreList([_-Score | Values], [Score | L]) :-
+    valuesToScoreList(Values, L).
+
+gen_problem(NCells, Coords, Values) :-
+    Coords = [King, Queen, Rook, Bishop, Knight, Pawn],
+    init_coord(King), init_coord(Queen), init_coord(Rook),
+    init_coord(Bishop), init_coord(Knight), init_coord(Pawn),
+
+    length(Values, NCells),
+    initValues(Values),
+
+    % All Distinct
+    valuesCoords(Values, CValues), % get values coords
+
+    posList(Coords, PosL1),
+    posList(CValues, PosL2),
+    append(PosL1, PosL2, NPosL),
+    all_distinct(NPosL),
+
+    mapValues(Coords, Values),
+
+    valuesToCoordList(Values, CoordValues),
+
+    append(Coords, CoordValues, L),
+    flattenList(L, NNL),
+    %valuesToScoreList(Values, ScoreValues),
+    %append(NL, ScoreValues, NNL),
+    labeling([value(selRandom)], NNL).
