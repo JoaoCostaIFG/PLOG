@@ -1,7 +1,5 @@
 :-use_module(library(clpfd)).
-:-use_module(library(between)).
-
-% N SEI TODO
+:-use_module(library(lists)).
 
 init_coord(L) :-
     length(L, 2),
@@ -149,29 +147,107 @@ chess_num(Values, Coords) :-
     %print_time('Labeling Time: '),
     fd_statistics, statistics.
 
+% DISPLAY
+%  --- --- --- --- --- --- --- ---
+% | 0 |   |   |   |   |   |   |   |
+%  --- --- --- --- --- --- --- ---
+base_board([
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1]
+]).
+
+replace_val([_|T], 0, X, [X|T]).
+replace_val([H|T], I, X, [H|R]) :-
+  I > -1,
+  NI is I - 1,
+  replace_val(T, NI, X, R), !.
+replace_val(L, _, _, L).
+
+replace_val_matrix([H|T], 0, Col, X, [R|T]) :-
+  replace_val(H, Col, X, R).
+replace_val_matrix([H|T], Line, Col, X, [H|R]) :-
+  Line > -1,
+  Line1 is Line - 1,
+  replace_val_matrix(T, Line1, Col, X, R).
+
+gen_board(_, 8, _, _, []).
+gen_board(X, Y, NumberedSquares, Coords, [Line|Lines]) :-
+  Y =< 7,
+  gen_board_line(X, Y, NumberedSquares, Coords, Line),
+  Y1 is Y + 1,
+  gen_board(X, Y1, NumberedSquares, Coords, Lines).
+
+gen_board_line(8, _, _, _, []).
+gen_board_line(X, Y, NumberedSquares, Coords, [C|Chars]) :-
+  X =< 7,
+  member([X, Y]-C, NumberedSquares),
+  X1 is X + 1,
+  gen_board_line(X1, Y, NumberedSquares, Coords, Chars).
+gen_board_line(X, Y, NumberedSquares, Coords, [C|Chars]) :-
+  X =< 7,
+  nth0(PieceIndex, Coords, [X, Y]),
+  C is -2 - PieceIndex,
+  X1 is X + 1,
+  gen_board_line(X1, Y, NumberedSquares, Coords, Chars).
+gen_board_line(X, Y, NumberedSquares, Coords, [-1|Chars]) :-
+  X =< 7,
+  \+member([X, Y]-_, NumberedSquares),
+  \+nth0(_, Coords, [X, Y]),
+  X1 is X + 1,
+  gen_board_line(X1, Y, NumberedSquares, Coords, Chars).
+
+display_board([]) :-
+    write(' --- --- --- --- --- --- --- ---'), nl.
+display_board([L|Lines]) :-
+    display_line_top,
+    display_line(L),
+    display_board(Lines).
+
+display_line_top :-
+  write(' --- --- --- --- --- --- --- ---'), nl.
+display_line([]) :- write('|'), nl.
+display_line([C|Chars]) :-
+    display_char(C),
+    display_line(Chars).
+
+display_char(-1) :- write('|   '), !. % green cuts
+display_char(-2) :- write('| K '), !.
+display_char(-3) :- write('| Q '), !.
+display_char(-4) :- write('| R '), !.
+display_char(-5) :- write('| B '), !.
+display_char(-6) :- write('| Kn'), !.
+display_char(-7) :- write('| P '), !.
+display_char(C) :-
+    C >= 0,
+    format('| ~w ', [C]).
 
 % THROWAWAY
+ttt(C) :-
+    NumberedSquares = [[1, 0]-1, [3, 0]-6],
+    chess_num(NumberedSquares, C), wr(C),
+    gen_board(0, 0, NumberedSquares, C, Board),
+    display_board(Board).
+
 wr(L):-
     % [[3, 1], [6, 0], [2, 0], [0, 3], [1, 1], [4, 1]|_] = L,
-
     format('Ki: ~w\tQ: ~w\tR: ~w\tB: ~w\tKn: ~w \tP: ~w \n', L).
-wr(_).
 
 test :-
-    % findall(C, (chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C)), _).
+    findall(C, (chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C)), _).
 
     % findall(C, (chess_num([[2, 1]-4, [0, 5]-0, [6, 3]-4, [2, 7]-4], C), wr(C)), _).
-
-    findall(C, (chess_num([[0, 0]-1, [1, 0]-0, [5, 0]-0, [7, 0]-1, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0, [5, 6]-0, [5, 7]-0, [7, 7]-1], C), wr(C)), _).
-
+    % findall(C, (chess_num([[0, 0]-1, [1, 0]-0, [5, 0]-0, [7, 0]-1, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0, [5, 6]-0, [5, 7]-0, [7, 7]-1], C), wr(C)), _).
     % findall(C, (chess_num([[2, 0]-0, [3, 0]-0, [2, 1]-1, [4, 1]-1, [2, 2]-2, [4, 2]-2,
                            %[2, 3]-3, [4, 3]-3, [2, 4]-4, [4, 4]-4, [6, 7]-0], C), wr(C)), _).
     % findall(C, (chess_num([[0, 0]-0, [7, 0]-0, [0, 6]-0, [0, 7]-0, [6, 7]-0,
     % [2, 2]-1, [3, 2]-1, [4, 2]-1, [5, 2]-1, [2, 3]-1, [3, 3]-1, [4, 3]-1, [5, 3]-1,
     % [2, 4]-1, [3, 4]-1, [4, 4]-1, [5, 4]-1], [2, 5]-1, [3, 5]-1, [4, 5]-1, [5, 5]-1], C), wr(C)), _).
-
-ttt(C) :-
-    chess_num([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C), wr(C).
 
 reset_timer:-
     statistics(total_runtime, _).
