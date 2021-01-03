@@ -11,12 +11,12 @@ flattenList([[X, Y] | L], [X, Y | NL]):- flattenList(L, NL).
 flattenList([[X, Y, Z] | L], [X, Y, Z | NL]):- flattenList(L, NL).
 
 elemToID([X, Y], V) :- V #= X + Y * 8.
-posList([], []).
-posList([Coord | L], [V | NL]):- elemToID(Coord, V), posList(L, NL).
+coordToIndexList([], []).
+coordToIndexList([Coord | L], [V | NL]):- elemToID(Coord, V), coordToIndexList(L, NL).
 
-valuesCoords([], []).
-valuesCoords([Coord-_ | L1], [Coord | L2]) :-
-    valuesCoords(L1, L2).
+stripNumberedSquareValue([], []).
+stripNumberedSquareValue([Coord-_ | L1], [Coord | L2]) :-
+    stripNumberedSquareValue(L1, L2).
 
 mapValues(_, []).
 mapValues(Coords, [Coord-V | L1]) :-
@@ -139,23 +139,24 @@ value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, V) :-
     valueQueen(Queen, Coord, QueenV, [King, Rook, Bishop, Knight, Pawn]),
     V #= KingV + QueenV + RookV + BishopV + KnightV + PawnV.
 
-chess_num(Values, Coords) :-
-    reset_timer,
-    % Definir Coords pecas
+chess_num(NumberedSquares, Coords) :-
     Coords = [King, Queen, Rook, Bishop, Knight, Pawn],
+    reset_timer,
+    % init the coordinates of each piece
     init_coord(King), init_coord(Queen), init_coord(Rook),
     init_coord(Bishop), init_coord(Knight), init_coord(Pawn),
-    % no overlap
-    posList(Coords, PosL1),
-    valuesCoords(Values, CValues), % get values coords
-    posList(CValues, PosL2),
-    append(PosL1, PosL2, NPosL),
 
-    all_distinct(NPosL),
-    % Valores
-    mapValues(Coords, Values),
-    %print_time('Posting Constraints: '),
+    % for alldistinct
+    stripNumberedSquareValue(NumberedSquares, NumberedSquaresCoords), % get values coords
+    coordToIndexList(NumberedSquaresCoords, PosL1),
+    coordToIndexList(Coords, PosL2),
+    append(PosL1, PosL2, PosL),
+    all_distinct(NPosL), % all cordinates of pieces and numbered squares have to be distinct
 
+    % solve the problem
+    mapValues(Coords, NumberedSquares),
+
+    print_time('Posting Constraints: '),
     flattenList(Coords, L),
     labeling([ffc, bisect], L),
     print_time('Labeling Time: '),
@@ -213,7 +214,77 @@ display_char(C) :-
     C >= 0,
     format('| ~w ', [C]).
 
-% THROWAWAY
+% TIMER
+reset_timer:-
+    statistics(total_runtime, _).
+print_time(Msg) :-
+    statistics(total_runtime, [_, T]),
+    TS is ((T // 10) * 10) / 1000, nl,
+    write(Msg), write(TS), write('s'), nl, nl.
+
+% GEN PROBLEM
+initNumberedSquares([]).
+initNumberedSquares([Coord-Score | NumberedSquares]) :-
+    length(Coord, 2),
+    domain(Coord, 0, 7),
+    % redundant but improves efficiency
+    % forbidding 0 on value domain to get more interesting puzzles
+    domain([Score], 1, 6),
+    initNumberedSquares(NumberedSquares).
+
+numList(I, N, []) :- I >= N.
+numList(I, N, [I | T]) :-
+    I < N,
+    I1 is I + 1,
+    numList(I1, N, T).
+permutatedIndsToCoords(_, []).
+permutatedIndsToCoords([Ind | PermutatedCoords], [[PieceX, PieceY] | Pieces]) :-
+    PieceX is mod(Ind, 8),
+    PieceY is div(Ind, 8),
+    permutatedIndsToCoords(PermutatedCoords, Pieces).
+gen_pieceCoords([King, Queen, Rook, Bishop, Knight, Pawn]) :-
+    % generate 6 random (distinct) coordinates for the game pieces
+    numList(0, 64, PossibleCoords),
+    random_permutation(PossibleCoords, PermutatedCoords),
+    permutatedIndsToCoords(PermutatedCoords, [King, Queen, Rook, Bishop, Knight, Pawn]).
+
+gen_problem(NCells, [King, Queen, Rook, Bishop, Knight, Pawn], NumberedSquares) :-
+    NCells < 57, % have to leave 6 free spots for the pieces (63 - 6 = 57)
+    Coords = [King, Queen, Rook, Bishop, Knight, Pawn],
+    gen_pieceCoords(Coords),
+
+    % a list with the given number (NCells) of NumberedSquares
+    length(NumberedSquares, NCells),
+    initNumberedSquares(NumberedSquares),
+
+    % for alldistinct
+    stripNumberedSquareValue(NumberedSquares, NumberedSquaresCoords), % strip value of NumberedSquares list
+    % convert coordinates to corresponding integer indexes
+    coordToIndexList(Coords, PosL1),
+    coordToIndexList(NumberedSquaresCoords, PosL2),
+    append(PosL1, PosL2, PosL),
+    all_distinct(PosL), % all numbered squares and pieces must have distinct coordinates
+
+    % solve the problem for the given pieces coordinates and numbered squares
+    mapValues(Coords, NumberedSquares),
+
+    % join the coordinates of numbered squares and the coordinates of the pieces into a list
+    % and flatten it (for labeling)
+    append(Coords, NumberedSquaresCoords, AllCoords),
+    flattenList(AllCoords, AllCoordsFlat),
+
+    % labeling and display
+    labeling([value(selRandom)], AllCoordsFlat),
+    display_board(NumberedSquares),
+    display_board(NumberedSquares, Coords).
+
+selRandom(Var, _Rest, BB0, BB1) :-
+    fd_set(Var, Set), fdset_to_list(Set, List),
+    random_member(Value, List),
+    (first_bound(BB0, BB1), Var #= Value ;
+     later_bound(BB0, BB1), Var #\= Value).
+
+% TESTS
 t(NumberedSquares, C):-
     write('Solving for'), nl,
     display_board(NumberedSquares),
@@ -262,74 +333,3 @@ test10(C) :-
 
 test11(C) :-
     t([[2, 1]-2, [6, 1]-3, [3, 2]-2, [1, 4]-3, [6, 4]-3, [4, 6]-3, [2, 7]-1], C).
-
-reset_timer:-
-    statistics(total_runtime, _).
-
-print_time(Msg) :-
-    statistics(total_runtime, [_, T]),
-    TS is ((T // 10) * 10) / 1000, nl,
-    write(Msg), write(TS), write('s'), nl, nl.
-
-% GEN PROBLEM
-selRandom(Var, _Rest, BB0, BB1) :-
-    fd_set(Var, Set), fdset_to_list(Set, List),
-    random_member(Value, List),
-    (first_bound(BB0, BB1), Var #= Value ;
-     later_bound(BB0, BB1), Var #\= Value).
-
-initValues([]).
-initValues([Coord-Score | Values]) :-
-    length(Coord, 2),
-    domain(Coord, 0, 7),
-    % redundant but improves efficiency
-    % forbidding 0 on value domain to get more interesting puzzles
-    domain([Score], 1, 6),
-    initValues(Values).
-
-valuesToCoordList([], []).
-valuesToCoordList([[X, Y]-_ | Values], [[X, Y] | L]) :-
-    valuesToCoordList(Values, L).
-
-numList(I, N, []) :- I >= N.
-numList(I, N, [I | T]) :-
-    I < N,
-    I1 is I + 1,
-    numList(I1, N, T).
-permutatedIndsToCoords(_, []).
-permutatedIndsToCoords([Ind | PermutatedCoords], [[PieceX, PieceY] | Pieces]) :-
-    PieceX is mod(Ind, 8),
-    PieceY is div(Ind, 8),
-    permutatedIndsToCoords(PermutatedCoords, Pieces).
-gen_pieceCoords([King, Queen, Rook, Bishop, Knight, Pawn]) :-
-    % generate 6 random (distinct) coordinates for the game pieces
-    numList(0, 64, PossibleCoords),
-    random_permutation(PossibleCoords, PermutatedCoords),
-    permutatedIndsToCoords(PermutatedCoords, [King, Queen, Rook, Bishop, Knight, Pawn]).
-    
-gen_problem(NCells, [King, Queen, Rook, Bishop, Knight, Pawn], Values) :-
-    NCells < 57, % if we ask for more than
-    Coords = [King, Queen, Rook, Bishop, Knight, Pawn],
-    gen_pieceCoords(Coords),
-
-    length(Values, NCells),
-    initValues(Values),
-
-    % All Distinct
-    valuesCoords(Values, CValues), % get values coords
-
-    posList(Coords, PosL1),
-    posList(CValues, PosL2),
-    append(PosL1, PosL2, NPosL),
-    all_distinct(NPosL),
-
-    mapValues(Coords, Values),
-
-    valuesToCoordList(Values, CoordValues),
-
-    append(Coords, CoordValues, L),
-    flattenList(L, NNL),
-
-    labeling([value(selRandom)], NNL),
-    display_board(Values),
-    display_board(Values, Coords).
