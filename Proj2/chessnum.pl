@@ -244,7 +244,7 @@ print_time(Msg) :-
     write(Msg), write(TS), write('s'), nl, nl.
 
 % GEN PROBLEM
-selRandom(Var, Rest, BB0, BB1) :-
+selRandom(Var, _Rest, BB0, BB1) :-
     fd_set(Var, Set), fdset_to_list(Set, List),
     random_member(Value, List),
     (first_bound(BB0, BB1), Var #= Value ;
@@ -254,20 +254,35 @@ initValues([]).
 initValues([Coord-Score | Values]) :-
     length(Coord, 2),
     domain(Coord, 0, 7),
-    %domain([Score], 0, 6),
+    % redundant but improves efficiency
+    % forbidding 0 on value domain to get more interesting puzzles
+    domain([Score], 1, 6),
     initValues(Values).
 
 valuesToCoordList([], []).
 valuesToCoordList([[X, Y]-_ | Values], [[X, Y] | L]) :-
     valuesToCoordList(Values, L).
-valuesToScoreList([], []).
-valuesToScoreList([_-Score | Values], [Score | L]) :-
-    valuesToScoreList(Values, L).
 
-gen_problem(NCells, Coords, Values) :-
+numList(I, N, []) :- I >= N.
+numList(I, N, [I | T]) :-
+    I < N,
+    I1 is I + 1,
+    numList(I1, N, T).
+permutatedIndsToCoords(_, []).
+permutatedIndsToCoords([Ind | PermutatedCoords], [[PieceX, PieceY] | Pieces]) :-
+    PieceX is mod(Ind, 8),
+    PieceY is div(Ind, 8),
+    permutatedIndsToCoords(PermutatedCoords, Pieces).
+gen_pieceCoords([King, Queen, Rook, Bishop, Knight, Pawn]) :-
+    % generate 6 random (distinct) coordinates for the game pieces
+    numList(0, 64, PossibleCoords),
+    random_permutation(PossibleCoords, PermutatedCoords),
+    permutatedIndsToCoords(PermutatedCoords, [King, Queen, Rook, Bishop, Knight, Pawn]).
+    
+gen_problem(NCells, [King, Queen, Rook, Bishop, Knight, Pawn], Values) :-
+    NCells < 57, % if we ask for more than
     Coords = [King, Queen, Rook, Bishop, Knight, Pawn],
-    init_coord(King), init_coord(Queen), init_coord(Rook),
-    init_coord(Bishop), init_coord(Knight), init_coord(Pawn),
+    gen_pieceCoords(Coords),
 
     length(Values, NCells),
     initValues(Values),
@@ -286,7 +301,7 @@ gen_problem(NCells, Coords, Values) :-
 
     append(Coords, CoordValues, L),
     flattenList(L, NNL),
-    %valuesToScoreList(Values, ScoreValues),
-    %append(NL, ScoreValues, NNL),
-    labeling([], NNL).
-    % labeling([value(selRandom)], NNL).
+
+    labeling([value(selRandom)], NNL),
+    display_board(Values),
+    display_board(Values, Coords).
