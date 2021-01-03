@@ -2,9 +2,6 @@
 :-use_module(library(lists)).
 :-use_module(library(random)).
 
-% N SEI TODO
->>>>>>> 52563256c739d4347b991f3f6dc8285a0f3a5429
-
 init_coord(L) :-
     length(L, 2),
     domain(L, 0, 7).
@@ -263,8 +260,7 @@ print_time(Msg) :-
     write(Msg), write(TS), write('s'), nl, nl.
 
 % GEN PROBLEM
-
-selRandom(Var, BB0, BB1) :-
+selRandom(Var, Rest, BB0, BB1) :-
     fd_set(Var, Set), fdset_to_list(Set, List),
     random_member(Value, List),
     (first_bound(BB0, BB1), Var #= Value ;
@@ -273,8 +269,8 @@ selRandom(Var, BB0, BB1) :-
 initValues([]).
 initValues([Coord-Score | Values]) :-
     length(Coord, 2),
-    domain(Coord, 0, 6),
-    %domain([Score], 0, 7),
+    domain(Coord, 0, 7),
+    %domain([Score], 0, 6),
     initValues(Values).
 
 valuesToCoordList([], []).
@@ -308,4 +304,5 @@ gen_problem(NCells, Coords, Values) :-
     flattenList(L, NNL),
     %valuesToScoreList(Values, ScoreValues),
     %append(NL, ScoreValues, NNL),
-    labeling([value(selRandom)], NNL).
+    labeling([], NNL).
+    % labeling([value(selRandom)], NNL).
