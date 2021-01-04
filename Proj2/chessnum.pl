@@ -36,7 +36,7 @@ is_not_between([X, Y], [CinX, Y2]-h-[CoutX, Y2], V) :-
         % true if is between
         Y #= Y2 
         #/\
-        CinX #=< X #/\ X #=< CoutX
+        CinX #< X #/\ X #< CoutX
     )) #<=> V.
 is_not_between([X, Y], [X2, CinY]-v-[X2, CoutY], V) :-
     % true if is not between
@@ -44,7 +44,7 @@ is_not_between([X, Y], [X2, CinY]-v-[X2, CoutY], V) :-
         % true if is between
         X #= X2 
         #/\
-        CinY #=< Y #/\ Y #=< CoutY
+        CinY #< Y #/\ Y #< CoutY
     )) #<=> V.
 is_not_between([X, Y], [CinX, CinY]-d-[CoutX, CoutY]-[TX, TY], V) :-
     % true if is not between
@@ -52,9 +52,9 @@ is_not_between([X, Y], [CinX, CinY]-d-[CoutX, CoutY]-[TX, TY], V) :-
         % true if is between
         abs(X - TX) #= abs(Y - TY)
         #/\
-        CinX #=< X #/\ X #=< CoutX
+        CinX #< X #/\ X #< CoutX
         #/\
-        CinY #=< Y #/\ Y #=< CoutY
+        CinY #< Y #/\ Y #< CoutY
     )) #<=> V.
 
 others_is_not_between(_, 1, []).
@@ -151,14 +151,14 @@ chess_num(NumberedSquares, Coords) :-
     coordToIndexList(NumberedSquaresCoords, PosL1),
     coordToIndexList(Coords, PosL2),
     append(PosL1, PosL2, PosL),
-    all_distinct(NPosL), % all cordinates of pieces and numbered squares have to be distinct
+    all_distinct(PosL), % all cordinates of pieces and numbered squares have to be distinct
 
     % solve the problem
     mapValues(Coords, NumberedSquares),
 
-    print_time('Posting Constraints: '),
+    % print_time('Posting Constraints: '),
     flattenList(Coords, L),
-    labeling([ffc, bisect], L),
+    labeling([ffc, median], L),
     print_time('Labeling Time: '),
     fd_statistics, statistics.
 
@@ -248,6 +248,13 @@ gen_pieceCoords([King, Queen, Rook, Bishop, Knight, Pawn]) :-
     random_permutation(PossibleCoords, PermutatedCoords),
     permutatedIndsToCoords(PermutatedCoords, [King, Queen, Rook, Bishop, Knight, Pawn]).
 
+% restricts all elements in a list to be sorted
+forceListSorted([]).
+forceListSorted([_ | []]).
+forceListSorted([A, B | C]) :-
+    A #< B,
+    forceListSorted([B | C]).
+
 gen_problem(NCells, [King, Queen, Rook, Bishop, Knight, Pawn], NumberedSquares) :-
     NCells < 57, % have to leave 6 free spots for the pieces (63 - 6 = 57)
     Coords = [King, Queen, Rook, Bishop, Knight, Pawn],
@@ -264,6 +271,11 @@ gen_problem(NCells, [King, Queen, Rook, Bishop, Knight, Pawn], NumberedSquares) 
     coordToIndexList(NumberedSquaresCoords, PosL2),
     append(PosL1, PosL2, PosL),
     all_distinct(PosL), % all numbered squares and pieces must have distinct coordinates
+
+    % make all NumberedSquares sorted => prevent symmetric results
+    % (the order of the numbered squares declaration doesn't affect the result, so
+    % different orderings don't result in different problems)
+    forceListSorted(PosL2),
 
     % solve the problem for the given pieces coordinates and numbered squares
     mapValues(Coords, NumberedSquares),
