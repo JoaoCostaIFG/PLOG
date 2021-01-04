@@ -225,31 +225,37 @@ These performance tests were done on puzzle in figure~\ref{fig:fig6}. Each combi
 of option was run three times. The numbers shown are the average of the three
 attempts made for each option combination.
 
-We decided to user \textbf{ffc} with \textbf{bisect}, because they're performance
+We decided to user \textbf{ffc} with \textbf{bisect}, because their performance
 was was good in these tests and seemed to do also do well when testing other
 puzzles. A close seconds was \textbf{ffc} with \textbf{median}. In this puzzle,
 \textbf{occurrence} with \textbf{bisect} has a very good performance, but it
 seems to be specific to this puzzle.
 
-|-----------------+-------+-------+--------+--------|
-|                 | step  | enum  | bisect | median |
-|=================+=======+=======+========+========|
-| leftmost        | 8.16s | 8.17s | 7.96s  | 8.14s  |
-|-----------------+-------+-------+--------+--------|
-| min             | 8.29s | 8.20s | 7.82s  | 8.40s  |
-|-----------------+-------+-------+--------+--------|
-| max             | 8.38s | 8.40s | 7.83s  | 8.60s  |
-|-----------------+-------+-------+--------+--------|
-| ff              | 8.15s | 7.98s | 7.92s  | 8.08s  |
-|-----------------+-------+-------+--------+--------|
-| anti_first_fail | 8.34s | 8.22s | 7.60s  | 11.15s |
-|-----------------+-------+-------+--------+--------|
-| occurrence      | 7.82s | 7.75s | 7.41s  | 7.70s  |
-|-----------------+-------+-------+--------+--------|
-| ffc             | 7.80s | 7.75s | 7.75s  | 7.76s  |
-|-----------------+-------+-------+--------+--------|
-| max_regret      | 8.15s | 7.91s | 7.84s  | 7.99s  |
-|-----------------+-------+-------+--------+--------|
+\begin{table}
+  \begin{center}
+    \caption{Search time for each option combination}
+    \label{tab:table1}
+    \begin{tabular}{l|c|c|c|c}
+          & step & enum & bisect & median\\
+      \hline
+        leftmost        & 8.16s & 8.17s & 7.96s  & 8.14s  \\
+      \hline
+        min             & 8.29s & 8.20s & 7.82s  & 8.40s  \\
+      \hline
+        max             & 8.38s & 8.40s & 7.83s  & 8.60s  \\
+      \hline
+        ff              & 8.15s & 7.98s & 7.92s  & 8.08s  \\
+      \hline
+        anti\_first\_fail & 8.34s & 8.22s & 7.60s  & 11.15s \\
+      \hline
+        occurrence      & 7.82s & 7.75s & 7.41s  & 7.70s  \\
+      \hline
+        ffc             & 7.80s & 7.75s & 7.75s  & 7.76s  \\
+      \hline
+        max\_regret      & 8.15s & 7.91s & 7.84s  & 7.99s  \\
+    \end{tabular}
+  \end{center}
+\end{table}
 
 \section{Conclusions and Future Work}
 The constraints implemented are able to find solutions to any problem fairly
