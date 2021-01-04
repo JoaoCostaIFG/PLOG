@@ -166,10 +166,9 @@ chess_num(NumberedSquares, Coords) :-
 
     % print_time('Posting Constraints: '),
     flattenList(Coords, L),
-    labeling([ffc, bisect], L),
-    print_time('Labeling Time: '),
-    fd_statistics.
-    % statistics.
+    labeling([ffc, bisect], L).
+    % print_time('Labeling Time: '),
+    % fd_statistics, statistics.
 
 % DISPLAY
 %  --- --- --- --- --- --- --- ---
@@ -289,13 +288,10 @@ gen_problem(NCells, [King, Queen, Rook, Bishop, Knight, Pawn], NumberedSquares) 
     % solve the problem for the given pieces coordinates and numbered squares
     mapValues(Coords, NumberedSquares),
 
-    % join the coordinates of numbered squares and the coordinates of the pieces into a list
-    % and flatten it (for labeling)
-    append(Coords, NumberedSquaresCoords, AllCoords),
-    flattenList(AllCoords, AllCoordsFlat),
-
+    % flatten the list of the numbered squares coordinates (for labeling)
+    flattenList(NumberedSquaresCoords, NumSquaresCoordFlat),
     % labeling and display
-    labeling([value(selRandom)], AllCoordsFlat),
+    labeling([value(selRandom)], NumSquaresCoordFlat),
     display_board(NumberedSquares),
     display_board(NumberedSquares, Coords).
 
@@ -306,12 +302,13 @@ selRandom(Var, _Rest, BB0, BB1) :-
      later_bound(BB0, BB1), Var #\= Value).
 
 % TESTS
+% solves and problem and shows the solution formated
 t(NumberedSquares, C):-
-    % write('Solving for'), nl,
-    % display_board(NumberedSquares),
+    write('Solving for'), nl,
+    display_board(NumberedSquares),
     chess_num(NumberedSquares, C).
-    % format('Ki: ~w\tQ: ~w\tR: ~w\tB: ~w\tKn: ~w \tP: ~w \n', C),
-    % display_board(NumberedSquares, C).
+    format('Ki: ~w\tQ: ~w\tR: ~w\tB: ~w\tKn: ~w \tP: ~w \n', C),
+    display_board(NumberedSquares, C).
 
 test1(C) :-
     % sol: [[3, 1], [6, 0], [2, 0], [0, 3], [1, 1], [4, 1]]
