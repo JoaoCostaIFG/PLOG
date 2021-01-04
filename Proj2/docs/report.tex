@@ -34,17 +34,20 @@ to solve.
 \end{abstract}
 
 \section{Introduction}
-
 In this paper we describe our solution to the \href{https://erich-friedman.github.io/puzzle/chessnum/}{Chess-Num}
 problem, which can solve any instance of the puzzle, generate a random solution, and
-present the result in a human readable way.
-We start by describing the problem, afterwards we explain our implementation, and 
-then we analyze the solution/approach.
+present the result in a human readable way. We weren't able to find any other
+approaches/references useful for this problem.
 
-We weren't able to find any other approaches/references useful for this problem.
+The article is structure as follows:
+\begin{itemize}
+  \item Problem/puzzle description.
+  \item Approach explanation (including the constraints implemented).
+  \item Solution visualization and random problem generation predicates.
+  \item Solution analysis an conclusions.
+\end{itemize}
 
 \section{Problem Description}
-
 The Chess-Num problem is a chess-related puzzle in which, given a set of
 numbered cells in the chess board, one tries to place the six different chess
 pieces (rook, queen, king, bishop, knight pawn) in such a way that the number
@@ -53,13 +56,12 @@ The \href{https://erich-friedman.github.io/puzzle/chessnum/}{source} of this
 problem has a description of this problem and examples of boards and their solution.
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.5\textwidth]{figures/chessdemo.eps}
+  \includegraphics[width=0.4\textwidth]{figures/chessdemo.eps}
   \caption{An example puzzle with four numbered squares and its unique solution.}\label{fig:fig1}
 \end{figure}
 
 \section{Approach}
 \subsection{Decision Variables}
-
 The decision variables correspond to the coordinate pair of each piece. They are all
 within the domain [0, 7] (inclusive). Furthermore, all of these coordinate pairs are
 distinct both between each other, as well from the given numbered cells' coordinates.
@@ -111,13 +113,11 @@ be the in the middle of the attack path (returning 1) (or the reverse). The pred
 members of the given list aren't in the attacking piece's path. If any other piece
 blocks the attack path, this predicate yields 0.
 
-\section{Solution Presentation}
-
+\section{Solution Visualization}
 The main (outermost) predicates that allow for a problem/solution visualization
 are the \inlinecode{display\_board/1} and the \inlinecode{display\_board/2} predicates.
 
 \subsection{The \inlinecode{display\_board(+NumberedSquares)} predicate}
-
 This predicate will draw a chess board with the given numbered squares coordinates
 showing the given values. This is used to show a problem without its solution. It
 should be noted that the predicates used to visually represent a solution do so
@@ -134,7 +134,6 @@ yields the following:
 \end{figure}
 
 \subsection{The \inlinecode{display\_board(+NumberedSquares, +Coords)} predicate}
-
 Similarly to display\_board/1, this predicate will draw a chess board with the given
 numbered cells. Along side those, the pieces in the given coordinates will also be
 represented. The representation of each piece is as follows: King - \textbf{K},
@@ -148,6 +147,28 @@ The call \inlinecode{display\_board([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0],
   \centering
   \caption{The textual representation of the puzzle show in figure\ref{fig:fig1}
   (along side its solution).}\label{fig:fig3}
+\end{figure}
+
+\section{Problem generation}
+The predicate \inlinecode{gen\_problem/3} was implemented to generated random
+puzzles with the given number of numbered squares. This predicate starts by placing
+the six chess pieces in random places on the board. Then, it runs the solver
+to place the constraints for the given quantity of numbered cells. After posting
+the constraints (labeling), we'll have a new puzzle. The puzzles generated also
+show one of their solution (they can have more).
+
+The puzzles generated have at least one solution, and the values for the decision
+variables are selected randomly. In order to make puzzles more interesting
+(in general), we've excluded the value 0 from the generated puzzles. The puzzles
+generated avoid symmetries in the list of numbered squares by constraining the
+numbered squares coordinates to be sorted (ascendantly) using their index ($Y * 8 + X$).
+For example, \inlinecode{[[0, 0]-1, [1, 0]-2]} and \inlinecode{[[1, 0]-2, [0, 0]-1]}
+are the same puzzle and thus, only the first is generated ($0 < 1$).
+
+\begin{figure}[H]
+\includegraphics[width=0.3\linewidth]{figures/gen_problem.png}
+  \centering
+  \caption{Example run of puzzle/problem generation.}\label{fig:fig4}
 \end{figure}
 
 \section{Experiments and Results}
@@ -174,7 +195,7 @@ even though there are the same number of numbered squares.
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.4\linewidth]{figures/chess2.eps}
-  \caption{A puzzle with four numbered squares and a unique solution.}\label{fig:fig4}
+  \caption{A puzzle with four numbered squares and a unique solution.}\label{fig:fig5}
 \end{figure}
 
 \subsubsection{The special case for the value 0}
@@ -193,7 +214,7 @@ special case.
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.4\linewidth]{figures/chess8.eps}
-  \caption{A puzzle with four numbered squares and a unique solution.}\label{fig:fig5}
+  \caption{A puzzle with four numbered squares and a unique solution.}\label{fig:fig6}
 \end{figure}
 
 \subsubsection{The processing order of numbered squares}
@@ -211,7 +232,7 @@ to \textbf{under 8 seconds}.
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.4\linewidth]{figures/chess7.eps}
-  \caption{A puzzle in which the order of the numbered squares processing makes a big impact.}\label{fig:fig6}
+  \caption{A puzzle in which the order of the numbered squares processing makes a big impact.}\label{fig:fig7}
 \end{figure}
 
 This led us to believe that there should have been more focus on the preprocessing
@@ -223,7 +244,7 @@ the board. Usually, this yields much better results, but not always. Sadly,
 this means we aren't sure how to preprocess the numbered square list.
 
 \subsection{Search strategies}
-These performance tests were done on puzzle in figure~\ref{fig:fig6}. Each combination
+These performance tests were done on puzzle in figure~\ref{fig:fig7}. Each combination
 of option was run three times. The numbers shown are the average of the three
 attempts made for each option combination.
 
@@ -261,10 +282,10 @@ seems to be specific to this puzzle.
 
 \section{Conclusions and Future Work}
 The constraints implemented are able to find solutions to any problem fairly
-quickly. Lower quantities of numbered squares result in faster solutions
-(less constraints). Numbered squares with values of 0 or 6 are faster to
-take care of and problems with more of them are solved faster than problems
-without (when comparing problems with the same quantity of numbered squares).
+quickly. Most times, lower quantities of numbered squares result in faster
+solutions (less constraints). Numbered squares with values of 0 or 6 are
+faster to take care of and problems with more of them are solved faster than
+problems without (when comparing problems with the same quantity of numbered squares).
 
 In the future, work should be focused in finding/implementing a way to do the
 correct preprocessing of the numbered square list. This will ensure that the

@@ -1,0 +1,24 @@
+\contentsline {title}{Chess-Num -- PLOG 2020}{1}{chapter.1}%
+\authcount {2}
+\contentsline {author}{\Authfont \AB@setsep João de Jesus Costa (201806560) \and \Authfont \AB@setsep João Lucas Silva Martins (201806436)}{1}{chapter.1}%
+\contentsline {section}{\numberline {1}Introduction}{1}{section.1.1}%
+\contentsline {section}{\numberline {2}Problem Description}{2}{section.1.2}%
+\contentsline {section}{\numberline {3}Approach}{2}{section.1.3}%
+\contentsline {subsection}{\numberline {3.1}Decision Variables}{2}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {3.2}Constraints}{3}{subsection.1.3.2}%
+\contentsline {subsubsection}{All Distinct}{3}{section*.3}%
+\contentsline {subsubsection}{Value}{3}{section*.4}%
+\contentsline {subsubsection}{KingValue, KnightValue and PawnValue}{3}{section*.5}%
+\contentsline {subsubsection}{QueenValue, BishopValue and RookValue}{3}{section*.6}%
+\contentsline {section}{\numberline {4}Solution Visualization}{4}{section.1.4}%
+\contentsline {subsection}{\numberline {4.1}The \texttt {display\_board(+NumberedSquares)} predicate}{4}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {4.2}The \texttt {display\_board(+NumberedSquares, +Coords)} predicate}{4}{subsection.1.4.2}%
+\contentsline {section}{\numberline {5}Problem generation}{5}{section.1.5}%
+\contentsline {section}{\numberline {6}Experiments and Results}{6}{section.1.6}%
+\contentsline {subsection}{\numberline {6.1}Dimensional analysis}{6}{subsection.1.6.1}%
+\contentsline {subsubsection}{The impact of the quantity of numbered squares}{6}{section*.7}%
+\contentsline {subsubsection}{The special case for the value 0}{6}{section*.8}%
+\contentsline {subsubsection}{The processing order of numbered squares}{7}{section*.9}%
+\contentsline {subsection}{\numberline {6.2}Search strategies}{8}{subsection.1.6.2}%
+\contentsline {section}{\numberline {7}Conclusions and Future Work}{8}{section.1.7}%
+\contentsline {section}{\numberline {8}Annex}{9}{section.1.8}%
