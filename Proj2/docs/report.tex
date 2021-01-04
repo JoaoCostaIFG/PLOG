@@ -14,7 +14,7 @@
 \lstset {
     language=Prolog,
     backgroundcolor=\color{black!12},
-breaklines=true,
+    breaklines=true,
     basicstyle=\footnotesize, % basic font setting
 }
 \renewcommand\UrlFont{\color{blue}\rmfamily}
@@ -23,7 +23,7 @@ breaklines=true,
 % title
 \title{Chess-Num -- PLOG 2020}
 \author{João de Jesus Costa (201806560) \and João Lucas Silva Martins (201806436)}
-\institute{FEUP, UPorto}
+\institute{FEUP-PLOG, Class 3MIEIC03, Group Chess-Num\_3}
 
 % document
 \begin{document}
@@ -316,6 +316,77 @@ implementation performs as fast as possible.
 \end{thebibliography}
 
 \section{Annex}
+\subsection{All puzzles}
+These are all the puzzles that were on the puzzle's webpage. In the test predicates in
+the source code (e.g.: \inlinecode{test1/1}) we refer to them by number. They are shown
+in order here, from 1 to 11.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{figures/chessdemo.eps}
+  \caption{Puzzle 1.}\label{fig:puzzle1}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{figures/chess2.eps}
+  \caption{Puzzle 2.}\label{fig:puzzle2}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{figures/chess3.eps}
+  \caption{Puzzle 3.}\label{fig:puzzle3}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{figures/chess4.eps}
+  \caption{Puzzle 4.}\label{fig:puzzle4}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{figures/chess5.eps}
+  \caption{Puzzle 5.}\label{fig:puzzle5}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{figures/chess6.eps}
+  \caption{Puzzle 6.}\label{fig:puzzle6}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{figures/chess7.eps}
+  \caption{Puzzle 7.}\label{fig:puzzle7}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{figures/chess8.eps}
+  \caption{Puzzle 8.}\label{fig:puzzle8}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{figures/chess9.eps}
+  \caption{Puzzle 9.}\label{fig:puzzle9}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{figures/chess10.eps}
+  \caption{Puzzle 10.}\label{fig:puzzle10}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\linewidth]{figures/chess11.eps}
+  \caption{Puzzle 11.}\label{fig:puzzle11}
+\end{figure}
+
 \subsection{Graphs}
 \textbf{Note:} the number above each bar represents the number of numbered square of
 its respective experience.
@@ -413,8 +484,17 @@ its respective experience.
 \end{axis}
 \end{tikzpicture}
 
-\subsection{Source code}
-\lstinputlisting{../chessnum.pl}
+\subsection{Source code -- \inlinecode{chessnum.pl}}
+\lstinputlisting{../src/chessnum.pl}
+
+\subsection{Source code -- \inlinecode{chessnum\_display.pl}}
+\lstinputlisting{../src/chessnum_display.pl}
+
+\subsection{Source code -- \inlinecode{chessnum\_gen\_problem.pl}}
+\lstinputlisting{../src/chessnum_gen_problem.pl}
+
+\subsection{Source code -- \inlinecode{chessnum\_tests.pl}}
+\lstinputlisting{../src/chessnum_tests.pl}
 
 \end{document}
 
