@@ -9,31 +9,28 @@
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{authblk}
 \renewcommand\UrlFont{\color{blue}\rmfamily}
 \newcommand{\inlinecode}[1]{\texttt{#1}}
 
-\begin{document}
-%
-\title{Chess-Num - PLOG 2020}
-%
-%\titlerunning{Abbreviated paper title}
-% If the paper title is too long for the running head, you can set
-% an abbreviated paper title here
-%
-\author{João Lucas Silva Martins - 201806436 \and João de Jesus Costa - 201806560}
-\author{FEUP-PLOG, Class 3MIEIC03, Group 3}
+% title
+\title{Chess-Num -- PLOG 2020}
+\author{João de Jesus Costa (201806560) \and João Lucas Silva Martins (201806436)}
+\institute{FEUP, UPorto}
 
-\institute{Faculty of the engineering of the university of Porto}
+% document
+\begin{document}
 \maketitle
 
 \begin{abstract}
-This paper is a brief analysis of our solution of the 
-\href{https://erich-friedman.github.io/puzzle/chessnum/}{Chess-Num} problem, developed
-in the context of the PLOG U.C. The solution is implemented in sicstus prolog using its
-finite domain constraints library (clpfd).
-TODO copiar conclusao para aqui (conclusões e principais resultados)
+This paper is an analysis of our solution to the  \href{https://erich-friedman.github.io/puzzle/chessnum/}{Chess-Num}
+problem, developed in the context of the PLOG curricular unit. The solution is
+implemented in sicstus prolog using its finite domain constraints library (clpfd).
+The implementation solves all possible problems fairly fast, given the input
+is preprocessed. Larger inputs (higher quantity of numbered squares) take longer
+to solve.
 
-%\keywords{First keyword  \and Second keyword \and Another keyword.}
+\keywords{Attack \and Board \and Chess \and Numbered square \and Piece \and Puzzle \and Solution.}
 \end{abstract}
 
 \section{Introduction}
@@ -44,7 +41,7 @@ present the result in a human readable way.
 We start by describing the problem, afterwards we explain our implementation, and 
 then we analyze the solution/approach.
 
-We weren't able to find any other approaches/references to this problem.
+We weren't able to find any other approaches/references useful for this problem.
 
 \section{Problem Description}
 
@@ -159,9 +156,9 @@ The call \inlinecode{display\_board([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0],
 The more numbered squares the puzzle has, the longer it takes to solve it.
 
 The problem in figure~\ref{fig:fig1} is the simplest problem we found with
-an unique solution. Our solver finds that solution in about 0.02 seconds.
+an unique solution. Our solver finds that solution in about \textbf{0.02 seconds}.
 From the problems in the puzzle's web page, this is the one that is solved
-the fastest.
+the fastest by our constraints.
 
 This puzzle has four numbered squares, one of which has the value 6. This
 is of note because, we always start constraining the pieces coordinates
@@ -170,7 +167,7 @@ value 6 implies that all six pieces are attacking it, thus pruning the
 possible coordinates for the pieces by a lot.
 
 We can compare this puzzle to the following which also has a single solution,
-but no numbered square with the value 6. It takes about 0.15 seconds to
+but no numbered square with the value 6. It takes about \textbf{0.15 seconds} to
 find the solution. This is significantly higher than the previous one
 even though there are the same number of numbered squares.
 
@@ -186,7 +183,12 @@ for each for each numbered square. This is very inefficient when the numbered
 square we're dealing with has value 0 (no one can attack it). This led us to
 create a special case for these numbered squares where we explicitly constraint
 all pieces to not attack the numbered square from the get go, instead of
-trying to attack it first.
+trying to attack it first. This change didn't affect the performance of puzzles
+with little to no squares with 0 value.
+
+The following example has a single solution and is solved much more quickly
+than most puzzles with the same quantity of numbered squares, because of this
+special case.
 
 \begin{figure}[H]
   \centering
@@ -198,13 +200,13 @@ trying to attack it first.
 When trying new puzzles, we noticed that changing the order of the inputted
 numbered squares, thus not changing the problem, but the processing order
 of the squares, had an effect on the speed of discovering solutions. This
-effect could be has mild has a 0.05 seconds difference or as extreme as some
-hours.
+effect ranged from mild (a few fractions of a second) to extreme (one or two
+hours).
 
-The most extreme case we found was following puzzle. This puzzle has a single
+The most extreme case we found was the following puzzle. This puzzle has a single
 solution and the program was tacking hours to find it. By changing the order
 the numbered squares are processed, we were able to reduce the processing time
-to 7.62 seconds.
+to \textbf{under 8 seconds}.
 
 \begin{figure}[H]
   \centering
@@ -212,15 +214,15 @@ to 7.62 seconds.
   \caption{A puzzle in which the order of the numbered squares processing makes a big impact.}\label{fig:fig6}
 \end{figure}
 
-We believe the best way to order the processing of the squares is to order by
-the values from highest to the lowest. After that, we disambiguate the ones
-with the same values by ordering from the closest to the corners of the board
-to the ones closer to the center of the board. Usually, this yields much better
-results, but not always. Sadly, this means we aren't sure how to pre-process
-the numbered square list.
+This led us to believe that there should have been more focus on the preprocessing
+of the numbered square list. As of now, we believe the best way to order the
+processing of the squares is to order by the values from highest to the lowest.
+After that, we disambiguate the ones with the same values by ordering
+from the closest to the corners of the board to the ones closer to the center of
+the board. Usually, this yields much better results, but not always. Sadly,
+this means we aren't sure how to preprocess the numbered square list.
 
 \subsection{Search strategies}
-
 These performance tests were done on puzzle in figure~\ref{fig:fig6}. Each combination
 of option was run three times. The numbers shown are the average of the three
 attempts made for each option combination.
@@ -268,9 +270,7 @@ In the future, work should be focused in finding/implementing a way to do the
 correct preprocessing of the numbered square list. This will ensure that the
 implementation performs as fast as possible.
 
-// TODO site do puzzle + slides do prof + docs do sicstus ?
 \begin{thebibliography}{8}
-
 \bibitem{sicstusdocs}
     Sicstus Documentation
         \href{https://sicstus.sics.se/documentation.html}{https://sicstus.sics.se/documentation.html}.
