@@ -4,37 +4,153 @@
 %
 \documentclass[runningheads]{llncs}
 %
-\usepackage{graphicx}
-\usepackage{hyperref}
 % Used for displaying a sample figure. If possible, figure files should
 % be included in EPS format.
-%
-% If you use the hyperref package, please uncomment the following line
-% to display URLs in blue roman font according to Springer's eBook style:
-% \renewcommand\UrlFont{\color{blue}\rmfamily}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\renewcommand\UrlFont{\color{blue}\rmfamily}
+\newcommand{\inlinecode}[1]{\texttt{#1}}
 
 \begin{document}
 %
-\title{Chess Num - PLOG 2020}
+\title{Chess-Num - PLOG 2020}
 %
 %\titlerunning{Abbreviated paper title}
 % If the paper title is too long for the running head, you can set
 % an abbreviated paper title here
 %
-%\author{João Lucas Silva Martins - 201806436 \and João de Jesus Costa - 201806560}
-\author{FEUP-PLOG, Turma 3MIEIC03, Grupo 3}
+\author{João Lucas Silva Martins - 201806436 \and João de Jesus Costa - 201806560}
+\author{FEUP-PLOG, Class 3MIEIC03, Group 3}
 
-\institute{Faculty of the engeenirings of the universities of feup}
+\institute{Faculty of the engineering of the university of Porto}
 \maketitle
 
 \begin{abstract}
 This paper is a brief analysis of our solution of the 
 \href{https://erich-friedman.github.io/puzzle/chessnum/}{Chess-Num} problem, developed
-in the context of the PLOG U.C. The solution is implemented using sicstus prolog and its
-clpfd constraints library. TODO copiar conclusao para aqui
+in the context of the PLOG U.C. The solution is implemented in sicstus prolog using its
+finite domain constraints library (clpfd).
+TODO copiar conclusao para aqui (conclusões e principais resultados)
 
 %\keywords{First keyword  \and Second keyword \and Another keyword.}
 \end{abstract}
+
+\section{Introduction}
+
+In this paper we describe our solution to the \href{https://erich-friedman.github.io/puzzle/chessnum/}{Chess-Num}
+problem, which can solve any instance of the puzzle, generate a random solution, and
+present the result in a human readable way.
+We start by describing the problem, afterwards we explain our implementation, and 
+then we analyze the solution/approach.
+
+We weren't able to find any other approaches/references to this problem.
+
+\section{Problem Description}
+
+The Chess-Num problem is a chess-related puzzle in which, given a set of
+numbered cells in the chess board, one tries to place the six different chess
+pieces (rook, queen, king, bishop, knight pawn) in such a way that the number
+of each given cell corresponds to the number of pieces attacking that cell.
+The \href{https://erich-friedman.github.io/puzzle/chessnum/}{source} of this
+problem has a description of this problem and examples of boards and their solution.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/chessdemo.eps}
+  \caption{An example puzzle with four numbered squares and its unique solution.}\label{fig:fig1}
+\end{figure}
+
+\section{Approach}
+\subsection{Decision Variables}
+
+The decision variables correspond to the coordinate pair of each piece. They are all
+within the domain [0, 7] (inclusive). Furthermore, all of these coordinate pairs are
+distinct both between each other, as well from the given numbered cells' coordinates.
+
+\subsection{Constraints}
+
+\section{Solution Presentation}
+
+The main (outermost) predicates that allow for a problem/solution visualization
+are the \inlinecode{display\_board/1} and the \inlinecode{display\_board/2} predicates.
+
+\subsection{The \inlinecode{display\_board(+NumberedSquares)} predicate}
+
+This predicate will draw a chess board with the given numbered squares coordinates
+showing the given values. This is used to show a problem without its solution. It
+should be noted that the predicates used to visually represent a solution do so
+"on-the-fly". This means that only the input data structures are used instead of
+a \textit{game board} structure being generated and displayed.
+
+The call display\_board([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0]). yields the
+following:
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\linewidth]{figures/display_board_1.png}
+  \caption{The textual representation of the puzzle show in fig1~\ref{fig:fig1}
+  (without its solution).}\label{fig2}
+\end{figure}
+
+\subsection{The \inlinecode{display\_board(+NumberedSquares, +Coords)} predicate}
+
+Similarly to display\_board/1, this predicate will draw a chess board with the given
+numbered cells. Along side those, the pieces in the given coordinates will also be
+represented. The representation of each piece is as follows: King - \textbf{K},
+Queen - \textbf{Q}, Rook - \textbf{R}, Bishop - \textbf{B}, Knight - \textbf{Kn},
+and Pawn - \textbf{P}.
+
+The call display\_board([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0],
+[[3, 1], [6, 0], [2, 0], [0, 3], [1, 1], [4, 1]]). yields the following:
+\begin{figure}[H]
+\includegraphics[width=0.5\linewidth]{figures/display_board_2.png}
+  \centering
+  \caption{The textual representation of the puzzle show in fig1~\ref{fig:fig1}
+  (along side its solution).}\label{fig3}
+\end{figure}
+
+\subsection{Innermost display predicates}
+
+// TODO ?
+
+\section{Experiments and Results}
+
+\section{Conclusions and Future Work}
+
+// TODO site do puzzle + slides do prof + docs do sicstus ?
+\begin{thebibliography}{8}
+% \bibitem{ref_article1}
+% Author, F.: Article title. Journal \textbf{2}(5), 99--110 (2016)
+
+% \bibitem{ref_lncs1}
+% Author, F., Author, S.: Title of a proceedings paper. In: Editor,
+% F., Editor, S. (eds.) CONFERENCE 2016, LNCS, vol. 9999, pp. 1--13.
+% Springer, Heidelberg (2016). \doi{10.10007/1234567890}
+
+% \bibitem{ref_book1}
+% Author, F., Author, S., Author, T.: Book title. 2nd edn. Publisher,
+% Location (1999)
+
+% \bibitem{ref_proc1}
+% Author, A.-B.: Contribution title. In: 9th International Proceedings
+% on Proceedings, pp. 1--2. Publisher, Location (2010)
+
+% \bibitem{ref_url1}
+% LNCS Homepage, \url{http://www.springer.com/lncs}. Last accessed 4
+% Oct 2017
+\end{thebibliography}
+
+\section{Annex}
+
+// TODO source code + extra graphs
+
+
+
+
+
+
+
+
+\end{document}
 %
 %
 %
@@ -81,10 +197,10 @@ schemas. Whenever possible, use vector graphics instead (see
 Fig.~\ref{fig1}).
 
 \begin{figure}
-\includegraphics[width=\textwidth]{fig1.eps}
+% \includegraphics[width=\textwidth]{fig1.eps}
 \caption{A figure caption is always placed below the illustration.
 Please note that short captions are centered, while long ones are
-justified by the macro package automatically.} \label{fig1}
+justified by the macro package automatically.} \label{fig3}
 \end{figure}
 
 \begin{theorem}
@@ -110,38 +226,3 @@ and a homepage~\cite{ref_url1}. Multiple citations are grouped
 \cite{ref_article1,ref_lncs1,ref_book1},
 \cite{ref_article1,ref_book1,ref_proc1,ref_url1}.
 
-\section{Introduction}
-
-
-In this paper we describe our solution to the \href{https://erich-friedman.github.io/puzzle/chessnum/}{Chess-Num}
-problem, which can solve any instance of the puzzle, generate a random solution,
-while presenting the result in a human readable way.
-We first begin by describing the problem, afterwards we explain our prolog approach,
-then we analyse the solution's complexity.
-
-Even tough we tried to find other approaches/references to the problem, we couldn't find any.
-
-\section{Problem Description}
-
-The Chess-Num problem is a chess puzzle in which, given a set of
-numbered cells in the chess board, one tries to place six chess pieces
-(rook, queen, king, bishop, knight pawn) in a way that the number of each
-given cell corresponds to the number of attacking pieces of that cell.
-See this \href{https://erich-friedman.github.io/puzzle/chessnum/}{link} for further description and
-examples.
-
-\section{Approach}
-\subsection{Decision Variables}
-
-The decision variables correspond to the pair coordinates for each piece. They all
-are within the domain [0, 7] . Also, all pairs are distinct between each other and the given
-numbered cells' coordinates.
-
-\subsection{Constraints}
-\section{Solution Presentation}
-\section{Experiments and Results}
-\section{Conclusions and Future Work}
-
-\section{References}
-\section{Annex}
-\end{document}
