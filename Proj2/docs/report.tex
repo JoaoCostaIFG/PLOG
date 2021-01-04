@@ -113,6 +113,35 @@ The call display\_board([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0],
 // TODO ?
 
 \section{Experiments and Results}
+\subsection{Dimensional analysis}
+\subsubsection{The impact of the quantity of numbered squares}
+The problem in fig1~\ref{fig:fig1} is the simplest problem we found with
+an unique solution. Our solver finds that solution in about 0.02// TODO seconds.
+From the problems in the puzzle's web page, this is the one that is solved
+the fastest.
+
+This puzzle has four numbered squares, one of which has the value 6. This
+is of note because, we always start constraining the pieces coordinates
+in a that they can attack the given numbered square. A numbered square with
+value 6 implies that all six pieces are attacking it, thus pruning the
+possible coordinates for the pieces by a lot.
+
+We can compare this puzzle to the following which also has a single solution,
+but no numbered square with the value 6. It takes about 1.04 seconds to
+find the solution. This is significantly higher than the previous one
+even though there are the same number of numbered squares.
+
+The more numbered squares the puzzle has, the longer it takes to solve it.
+
+\subsubsection{The special case for the value 0}
+As previously stated, our constraints are posted aggressively on the attack
+for each for each numbered square. This is very inefficient when the numbered
+square we're dealing with has value 0 (no one can attack it). This led us to
+create a special case for these numbered squares where we explicitly constraint
+all pieces to not attack the numbered square from the get go, instead of
+trying to attack it first.
+
+\subsubsection{The processing order of numbered squares}
 
 \section{Conclusions and Future Work}
 

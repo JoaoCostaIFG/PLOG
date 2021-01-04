@@ -66,24 +66,30 @@ others_is_not_between(Condition, 0, [OtherCoord | _Others]) :-
     % others_is_not_between(Condition, _, Others).
 
 % VALUES
+% These predicates return 1 in V if the given piece can attack the numbered square
+% and 0 otherwise
 % KING
 valueKing([KX, KY], [X, Y], V) :-
     (abs(KX - X) #< 2 #/\ abs(KY - Y) #< 2) #<=> V.
 
 % QUEEN
+% if on the same line, attacks is has line of sight (horizontal)
 valueQueen([QX, QY], [X, Y], V, Others) :-
     QY #= Y,
     bigger(QX, X, BigX, SmallX),
     others_is_not_between([SmallX, QY]-h-[BigX, Y], V, Others).
+% if on the same column, attacks is has line of sight (vertical)
 valueQueen([QX, QY], [X, Y], V, Others) :-
     QX #= X,
     bigger(QY, Y, BigY, SmallY),
     others_is_not_between([QX, SmallY]-v-[X, BigY], V, Others).
+% if on the same diagonal, attacks if has line of sight (diagonal)
 valueQueen([QX, QY], [X, Y], V, Others) :-
     abs(QY - Y) #= abs(QX - X),
     bigger(QX, X, BigX, SmallX),
     bigger(QY, Y, BigY, SmallY),
     others_is_not_between([SmallX, SmallY]-d-[BigX, BigY]-[X, Y], V, Others).
+% if not on the same line, column, and diagonal doesn't attack
 valueQueen([QX, QY], [X, Y], 0, _) :-
     abs(QY - Y) #\= abs(QX - X), QX #\= X, QY #\= Y.
 
@@ -122,6 +128,7 @@ valueKnight([KX, KY], [X, Y], V) :-
 valuePawn([PX, PY], [X, Y], V) :-
     (PY - Y #= 1 #/\ abs(PX - X) #= 1) #<=> V.
 
+% Constraints the pieces coordinates to not attack a numbered square that can't be attacked.
 value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, 0) :-
     valueKing(King, Coord, 0),
     valueKnight(Knight, Coord, 0),
@@ -129,6 +136,7 @@ value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, 0) :-
     valueQueen(Queen, Coord, 0, [King, Rook, Bishop, Knight, Pawn]),
     valueRook(Rook, Coord, 0, [King, Queen, Bishop, Knight, Pawn]),
     valueBishop(Bishop, Coord, 0, [King, Queen, Rook, Knight, Pawn]).
+% Constraints the pieces coordinates to attack a numbered square the given number of times.
 value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, V) :-
     V #\= 0,
     valuePawn(Pawn, Coord, PawnV),
@@ -298,27 +306,29 @@ selRandom(Var, _Rest, BB0, BB1) :-
 
 % TESTS
 t(NumberedSquares, C):-
-    write('Solving for'), nl,
-    display_board(NumberedSquares),
-    chess_num(NumberedSquares, C),
-    format('Ki: ~w\tQ: ~w\tR: ~w\tB: ~w\tKn: ~w \tP: ~w \n', C),
-    display_board(NumberedSquares, C).
+    % write('Solving for'), nl,
+    % display_board(NumberedSquares),
+    chess_num(NumberedSquares, C).
+    % format('Ki: ~w\tQ: ~w\tR: ~w\tB: ~w\tKn: ~w \tP: ~w \n', C),
+    % display_board(NumberedSquares, C).
 
 test1(C) :-
     % sol: [[3, 1], [6, 0], [2, 0], [0, 3], [1, 1], [4, 1]]
     t([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0], C).
 
 test2(C) :-
-    t([[2, 1]-4, [0, 5]-0, [6, 3]-4, [2, 7]-4], C).
+    t([[2, 1]-4, [6, 3]-4, [2, 7]-4, [0, 5]-0], C).
 
 test3(C) :-
-    t([[0, 0]-1, [1, 0]-0, [5, 0]-0, [7, 0]-1, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0, [5, 6]-0, [5, 7]-0, [7, 7]-1], C).
+    t([[1, 0]-0, [5, 0]-0, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0,
+  [5, 6]-0, [5, 7]-0, [0, 0]-1, [7, 0]-1, [7, 7]-1], C).
 
 test4(C) :-
-    t([[2, 1]-3, [7, 1]-0, [4, 4]-5, [3, 6]-3, [7, 6]-0], C).
+    t([[4, 4]-5, [2, 1]-3, [3, 6]-3, [7, 6]-0, [7, 1]-0], C).
 
 test5(C) :-
-    t([[1, 0]-0, [2, 0]-0, [5, 0]-0, [7, 1]-0, [7, 2]-0, [0, 4]-0, [5, 4]-4, [7, 4]-0, [7, 6]-0, [2, 7]-0, [5, 7]-0, [6, 7]-0, [7, 7]-0], C).
+    t([[5, 4]-4, [1, 0]-0, [2, 0]-0, [5, 0]-0, [7, 1]-0, [7, 2]-0, [0, 4]-0, [7, 4]-0,
+    [7, 6]-0, [2, 7]-0, [5, 7]-0, [6, 7]-0, [7, 7]-0], C).
 
 test6(C) :-
     t([[0, 0]-0, [7, 0]-0, [0, 6]-0, [0, 7]-0, [6, 7]-0,
@@ -328,20 +338,23 @@ test6(C) :-
   [2, 5]-1, [3, 5]-1, [4, 5]-1, [5, 5]-1], C).
 
 test7(C) :-
-    t([[0, 1]-1, [1, 1]-1, [2, 1]-1, [3, 1]-1, [4, 1]-1, [5, 1]-1, [6, 1]-1, [7, 1]-1,
-  [0, 6]-1, [1, 6]-1, [2, 6]-1, [3, 6]-2, [4, 6]-2, [5, 6]-1, [6, 6]-1, [7, 6]-2,
-  [5, 7]-2, [6, 7]-1], C).
+    t([[5, 7]-2, [7, 6]-2, [3, 6]-2, [4, 6]-2, [0, 1]-1, [1, 1]-1, [2, 1]-1, [3, 1]-1, [4, 1]-1, [5, 1]-1,
+  [6, 1]-1, [7, 1]-1, [0, 6]-1, [1, 6]-1, [2, 6]-1, [5, 6]-1, [6, 6]-1, [6, 7]-1], C).
 
 test8(C) :-
-    t([[0, 0]-0, [0, 1]-0, [1, 1]-0, [1, 2]-0, [2, 2]-0, [2, 3]-0, [3, 3]-0, [3, 4]-0, [4, 4]-0, [4, 5]-0, [5, 5]-0, [5, 6]-0, [6, 6]-0, [6, 7]-0, [7, 7]-0, [2, 6]-2], C).
+    t([[0, 0]-0, [0, 1]-0, [1, 1]-0, [1, 2]-0, [2, 2]-0, [2, 3]-0, [3, 3]-0, [3, 4]-0, [4, 4]-0, [4, 5]-0,
+  [5, 5]-0, [5, 6]-0, [6, 6]-0, [6, 7]-0, [7, 7]-0, [2, 6]-2], C).
 
 test9(C) :-
-    t([[2, 0]-0, [3, 0]-0, [2, 1]-1, [4, 1]-1, [2, 2]-2, [4, 2]-2, [2, 3]-3, [4, 3]-3, [2, 4]-4, [4, 4]-4, [6, 7]-0], C).
+    t([[2, 4]-4, [4, 4]-4, [2, 3]-3, [4, 3]-3, [2, 0]-0, [3, 0]-0, [6, 7]-0, [2, 2]-2, [4, 2]-2, [2, 1]-1, [4, 1]-1], C).
 
 test10(C) :-
-    t([[0, 0]-0, [1, 0]-0, [2, 0]-0, [3, 0]-0, [4, 0]-0, [5, 0]-0, [6, 0]-0, [7, 0]-0,
-  [0, 1]-1, [1, 1]-1, [2, 1]-1, [3, 1]-1, [4, 1]-1, [5, 1]-1, [6, 1]-1, [7, 1]-1,
-  [0, 5]-1, [2, 6]-2, [4, 7]-3], C).
+    % t([[0, 0]-0, [1, 0]-0, [2, 0]-0, [3, 0]-0, [4, 0]-0, [5, 0]-0, [6, 0]-0, [7, 0]-0,
+  % [0, 1]-1, [1, 1]-1, [2, 1]-1, [3, 1]-1, [4, 1]-1, [5, 1]-1, [6, 1]-1, [7, 1]-1,
+  % [0, 5]-1, [2, 6]-2, [4, 7]-3], C).
+    t([[4, 7]-3, [0, 0]-0, [1, 0]-0, [2, 0]-0, [3, 0]-0, [4, 0]-0, [5, 0]-0, [6, 0]-0, [7, 0]-0,
+  [2, 6]-2, [0, 1]-1, [1, 1]-1, [2, 1]-1, [3, 1]-1, [4, 1]-1, [5, 1]-1, [6, 1]-1, [7, 1]-1,
+  [0, 5]-1], C).
 
 test11(C) :-
-    t([[2, 1]-2, [6, 1]-3, [3, 2]-2, [1, 4]-3, [6, 4]-3, [4, 6]-3, [2, 7]-1], C).
+    t([[6, 1]-3, [1, 4]-3, [6, 4]-3, [4, 6]-3, [2, 1]-2, [3, 2]-2, [2, 7]-1], C).
