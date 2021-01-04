@@ -9,6 +9,7 @@
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{pgfplots}
 \usepackage{authblk}
 \renewcommand\UrlFont{\color{blue}\rmfamily}
 \newcommand{\inlinecode}[1]{\texttt{#1}}
@@ -288,7 +289,147 @@ implementation performs as fast as possible.
 \end{thebibliography}
 
 \section{Annex}
+\subsection{Graphs}
+Note that the number above each bar represents the number of given cells of
+its respective experience.
 
-// TODO source code + extra graphs + problem gen ?
+\begin{tikzpicture}
+\begin{axis}[
+    title={Time in order to Experience number},
+    xlabel={Experience number},
+    ylabel={Time (s)},
+    xtick = data,
+    grid style=dashed,
+    nodes near coords
+]
+\addplot[
+    ybar,
+    fill=blue,
+    point meta=explicit,
+    color=blue
+    ]
+    coordinates {
+        (1, 0.02) [4]
+        (2, 0.15) [4]
+        (3, 10.74) [13]
+        (4, 0.31) [5]
+        (5, 5.9) [13]
+        (6, 52.91) [21]
+        (7, 7.62) [18]
+        (8, 6.59) [16]
+        (9, 4.14) [11]
+        (10, 15.11) [19]
+        (11, 6.3) [7]
+    };
+\end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}
+\begin{axis}[
+    title={Number of backtracks in order to Experience number},
+    xlabel={Experience number},
+    ylabel={Number of backtracks},
+    xtick = data,
+    grid style=dashed,
+    nodes near coords
+]
+\addplot[
+    ybar,
+    fill=blue,
+    point meta=explicit,
+    color=blue
+    ]
+    coordinates {
+        (1, 870) [4]
+        (2, 6423) [4]
+        (3, 529728) [13]
+        (4, 13458) [5]
+        (5, 306581) [13]
+        (6, 2374869) [21]
+        (7, 389251) [18]
+        (8, 423694) [16]
+        (9, 12361393) [11]
+        (10, 1823598) [19]
+        (11, 302458) [7]
+    };
+\end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}
+\begin{axis}[
+    title={Number of created constraints in order to Experience number},
+    xlabel={Experience number},
+    ylabel={Created constraints},
+    xtick = data,
+    grid style=dashed,
+    nodes near coords
+]
+\addplot[
+    ybar,
+    fill=blue,
+    point meta=explicit,
+    color=blue
+    ]
+    coordinates {
+        (1, 7882) [4]
+        (2, 59777) [4]
+        (3, 4274679) [13]
+        (4, 112229) [5]
+        (5, 2464448) [13]
+        (6, 18141558) [21]
+        (7, 2925157) [18]
+        (8, 3547552) [16]
+        (9, 108464947) [11]
+        (10, 11599568) [19]
+        (11, 2379456) [7]
+    };
+\end{axis}
+\end{tikzpicture}
 
 \end{document}
+
+%GRAPH DATA
+%4 4 13 5 13 21 18 16 11 19 7
+%1 - 0.02s
+%Backtracks: 870
+%Constraints created: 7882
+%--------
+%2newnew - 0.15s
+%Backtracks: 6423
+%Constraints created: 59777
+%--------
+%3new - 10.74s
+%Backtracks: 529728
+%Constraints created: 4274679
+%--------
+%4new - 0.31s
+%Backtracks: 13458
+%Constraints created: 112229
+%--------
+%5new - 5.9s
+%Backtracks: 306581
+%Constraints created: 2464448
+%--------
+%6 - 52.91s
+%Backtracks: 2374869
+%Constraints created: 18141558
+%-----
+%7new - 7.62s
+%Backtracks: 389251
+%Constraints created: 2925157
+%--------
+%8 - 6.59s
+%Backtracks: 423694
+%Constraints created: 3547552
+%--------
+%9new - 4.14s
+%Backtracks: 12361393
+%Constraints created: 108464947
+%------
+%10new - 15.11s
+%Backtracks: 1823598
+%Constraints created: 11599568
+%----
+%11new - 6.3s
+%Backtracks: 302458
+%Constraints created: 2379456
