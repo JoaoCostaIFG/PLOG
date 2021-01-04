@@ -68,45 +68,51 @@ within the domain [0, 7] (inclusive). Furthermore, all of these coordinate pairs
 distinct both between each other, as well from the given numbered cells' coordinates.
 
 \subsection{Constraints}
+\subsubsection{All Distinct}
+The first restriction placed is applied to the pieces' coordinates. It ensures that
+no two pieces and/or numbered squares are placed in the same spot. To achieve
+this we use the predicate \inlinecode{all\_distinct/1} with a list of the indexes of
+each coordinate [X, Y]. An index corresponds to $Y * 8 + X$.
 
-%\subsubsection{All Distinct}
-The first restriction placed is applied to the coordinates' pieces. It ensures that all of them
-and the chosen cells' coordinates are all different. To achieve this we use the library
-predicate \inlinecode{all\_distinct/1} with a list of indices for each coordinate
-[X, Y], each index corresponding to $Y * 8 + X$.
+\subsubsection{Value}
+The second set of restrictions is applied for each given cell, and it ensures that, its
+value corresponds to number of attacking placed pieces. For this, the \inlinecode{value/3}
+predicate is used. It first calculates a boolean value for each piece through the use of
+the value predicate of its type, e.g.: \inlinecode{valueKing/3}. The returned value
+corresponds to 1 if the piece is attacking the cell and to 0 if it isn't attacking.
+We then constraint the sum of all these values to equal the value on the given
+numbered square.
 
-%\subsubsection{Value}
-The second set of restrictions is applied for each given cell, and it ensures that, for each
-one, its value corresponds to number of attacking placed pieces. For this, the \inlinecode{value/3}
-predicate is used. It first calculates a boolean value for each piece through the use of the predicate
-\inlinecode{value[Piece\_Name]/3}. The calculated value corresponds to 1 if the piece is attacking
-the cell and to 0 if it isn't attacking. A sum is then used to verify that the sum of all pieces' values
-correspond to the given cell's value.
+We always try to restrict the piece to attack the cell before restricting it to not attack.
 
-%\subsubsection{KingValue, KnightValue and PawnValue}
-The predicates \inlinecode{valueKing/3, valueKnight/3, valuePawn/3} are straightforward, as
-collisions aren't possible with these pieces. Their implementation applies restrictions based
-on chess' rules and are as follows: \inlinecode{valueKing/3} yields 1 if the given cell is orthogonally adjacent to
-the king; \inlinecode{valueKnight/3} yields 1 if the given cell makes a 'L' pattern
-with the knight; \inlinecode{valuePawn/3} yields 1 if the given cell is diagonally and adjacent to
-the pawn. If any of these predicates yield 1, constraints are placed to the pieces' coordinates
-to ensure that the rules are followed. During the program execution, these constraints may
-be too rigid, causing the predicate to fail and backtrack, lifting the placed restrictions and
-yielding 0.
+\subsubsection{KingValue, KnightValue and PawnValue}
+The predicates \inlinecode{valueKing/3}, \inlinecode{valueKnight/3}, \inlinecode{valuePawn/3}
+restricts the given piece to attack a given square (returning 1) or not attack
+(returning 0). The restrictions applied follow chess' rules: \textbf{King}
+attacks squares orthogonally and diagonally adjacent; \textbf{Knight} attacks squares
+in an \textit{L} pattern; \textbf{Pawn} attacks squares above it that are diagonally
+adjacent.
 
-%\subsubsection{QueenValue, BishopValue and RookValue}
-The predicates \inlinecode{valueQueen/3, valueBishop/3, valueRook/3} behave similarly to
-the previous explained predicates when it comes to applying chess rules. The rook can attack
-horizontaly or verticaly, the bishop can attack diagonally and the queen can attack horizontaly, verticaly
-or diagonally. The main difference is that all of them need also to ensure that no other piece
-is placed between their attack path and the given cell.
-For this purpose, we use the predicate \inlinecode{others\_is\_not\_between/3}, which calls
-\inlinecode{is\_not\_between/3} for each other piece with a given attack path (diagonal, vertical or horizontal)
-correspondant to the attacking piece's attack move. \inlinecode{is\_not\_between/3} yields 1 and
-restricts the given piece to not be the within attack and can yield 0 through backtrack.
-The \inlinecode{others\_is\_not\_between/3} uses this result to verify that all of the members of
-the given list aren't in the attacking piece's path. If any other piece blocks the attack path,
-this predicate yields 0.
+\subsubsection{QueenValue, BishopValue and RookValue}
+The predicates \inlinecode{valueQueen/4}, \inlinecode{valueBishop/4}, \inlinecode{valueRook/4}
+behave similarly to the previously listed predicates, but also take into account
+other pieces blocking it. This wasn't a problem in the previous predicates, because
+they either only move a single square at a time (King, Pawn) or jump over other pieces
+(Knight). Once again, chess rules tell us that, if not blocked, the rook can attack
+horizontally and vertically, the bishop can attack diagonally, and the queen can attack
+horizontally, vertically and diagonally.
+
+The predicate \inlinecode{others\_is\_not\_between/3}, constraints whether or not the
+path between the given piece and the target square is clear (no pieces blocking the path).
+This predicate calls \inlinecode{is\_not\_between/3} for each other piece with a given
+condition. This condition defines the path (diagonal, vertical or horizontal) between
+the piece and its target square, e.g.: \inlinecode{[0, 0]-h-[3, 0]} is the path of
+a piece in \inlinecode{[0, 0]} to \inlinecode{[3, 0]} horizontally. The predicate
+\inlinecode{is\_not\_between/3} takes care of restricting the given piece to not
+be the in the middle of the attack path (returning 1) (or the reverse). The predicate
+\inlinecode{others\_is\_not\_between/3} uses this result to verify that all of the
+members of the given list aren't in the attacking piece's path. If any other piece
+blocks the attack path, this predicate yields 0.
 
 \section{Solution Presentation}
 
@@ -125,7 +131,7 @@ The call \inlinecode{display\_board([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0]).}
 yields the following:
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.5\linewidth]{figures/display_board_1.png}
+  \includegraphics[width=0.4\linewidth]{figures/display_board_1.png}
   \caption{The textual representation of the puzzle show in figure\ref{fig:fig1}
   (without its solution).}\label{fig:fig2}
 \end{figure}
@@ -141,19 +147,17 @@ and Pawn - \textbf{P}.
 The call \inlinecode{display\_board([[1, 0]-1, [3, 0]-6, [4, 2]-2, [3, 4]-0],
 [[3, 1], [6, 0], [2, 0], [0, 3], [1, 1], [4, 1]]).} yields the following:
 \begin{figure}[H]
-\includegraphics[width=0.5\linewidth]{figures/display_board_2.png}
+\includegraphics[width=0.4\linewidth]{figures/display_board_2.png}
   \centering
   \caption{The textual representation of the puzzle show in figure\ref{fig:fig1}
   (along side its solution).}\label{fig:fig3}
 \end{figure}
 
-\subsection{Innermost display predicates}
-
-// TODO ?
-
 \section{Experiments and Results}
 \subsection{Dimensional analysis}
 \subsubsection{The impact of the quantity of numbered squares}
+The more numbered squares the puzzle has, the longer it takes to solve it.
+
 The problem in figure~\ref{fig:fig1} is the simplest problem we found with
 an unique solution. Our solver finds that solution in about 0.02 seconds.
 From the problems in the puzzle's web page, this is the one that is solved
@@ -172,11 +176,9 @@ even though there are the same number of numbered squares.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.5\linewidth]{figures/chess2.eps}
+  \includegraphics[width=0.4\linewidth]{figures/chess2.eps}
   \caption{A puzzle with four numbered squares and a unique solution.}\label{fig:fig4}
 \end{figure}
-
-The more numbered squares the puzzle has, the longer it takes to solve it.
 
 \subsubsection{The special case for the value 0}
 As previously stated, our constraints are posted aggressively on the attack
@@ -188,7 +190,7 @@ trying to attack it first.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.5\linewidth]{figures/chess8.eps}
+  \includegraphics[width=0.4\linewidth]{figures/chess8.eps}
   \caption{A puzzle with four numbered squares and a unique solution.}\label{fig:fig5}
 \end{figure}
 
@@ -206,9 +208,47 @@ to 7.62 seconds.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.5\linewidth]{figures/chess7.eps}
+  \includegraphics[width=0.4\linewidth]{figures/chess7.eps}
   \caption{A puzzle with four numbered squares and a unique solution.}\label{fig:fig6}
 \end{figure}
+
+We believe the best way to order the processing of the squares is to order by
+the values from highest to the lowest. After that, we disambiguate the ones
+with the same values by ordering from the closest to the corners of the board
+to the ones closer to the center of the board. This usually yields much better
+results, but not always.
+
+\subsection{Search strategies}
+
+These performance tests were done on puzzle in figure~\ref{fig:fig6}. Each combination
+of option was run three times. The numbers shown are the average of the three
+attempts made for each option combination.
+
+We decided to user \textbf{ffc} with \textbf{bisect}, because they're performance
+was was good in these tests and seemed to do also do well when testing other
+puzzles. A close seconds was \textbf{ffc} with \textbf{median}. In this puzzle,
+\textbf{occurrence} with \textbf{bisect} has a very good performance, but it
+seems to be specific to this puzzle.
+
+|-----------------+-------+-------+--------+--------|
+|                 | step  | enum  | bisect | median |
+|=================+=======+=======+========+========|
+| leftmost        | 8.16s | 8.17s | 7.96s  | 8.14s  |
+|-----------------+-------+-------+--------+--------|
+| min             | 8.29s | 8.20s | 7.82s  | 8.40s  |
+|-----------------+-------+-------+--------+--------|
+| max             | 8.38s | 8.40s | 7.83s  | 8.60s  |
+|-----------------+-------+-------+--------+--------|
+| ff              | 8.15s | 7.98s | 7.92s  | 8.08s  |
+|-----------------+-------+-------+--------+--------|
+| anti_first_fail | 8.34s | 8.22s | 7.60s  | 11.15s |
+|-----------------+-------+-------+--------+--------|
+| occurrence      | 7.82s | 7.75s | 7.41s  | 7.70s  |
+|-----------------+-------+-------+--------+--------|
+| ffc             | 7.80s | 7.75s | 7.75s  | 7.76s  |
+|-----------------+-------+-------+--------+--------|
+| max_regret      | 8.15s | 7.91s | 7.84s  | 7.99s  |
+|-----------------+-------+-------+--------+--------|
 
 \section{Conclusions and Future Work}
 
@@ -237,88 +277,6 @@ to 7.62 seconds.
 
 \section{Annex}
 
-// TODO source code + extra graphs
-
-
-
-
-
-
-
+// TODO source code + extra graphs + problem gen ?
 
 \end{document}
-%
-%
-%
-\section{Template}
-\subsection{A Subsection Sample}
-Please note that the first paragraph of a section or subsection is
-not indented. The first paragraph that follows a table, figure,
-equation etc. does not need an indent, either.
-
-Subsequent paragraphs, however, are indented.
-
-\subsubsection{Sample Heading (Third Level)} Only two levels of
-headings should be numbered. Lower level headings remain unnumbered;
-they are formatted as run-in headings.
-
-\paragraph{Sample Heading (Fourth Level)}
-The contribution should contain no more than four levels of
-headings. Table~\ref{tab1} gives a summary of all heading levels.
-
-\begin{table}
-\caption{Table captions should be placed above the
-tables.}\label{tab1}
-\begin{tabular}{|l|l|l|}
-\hline
-Heading level &  Example & Font size and style\\
-\hline
-Title (centered) &  {\Large\bfseries Lecture Notes} & 14 point, bold\\
-1st-level heading &  {\large\bfseries 1 Introduction} & 12 point, bold\\
-2nd-level heading & {\bfseries 2.1 Printing Area} & 10 point, bold\\
-3rd-level heading & {\bfseries Run-in Heading in Bold.} Text follows & 10 point, bold\\
-4th-level heading & {\itshape Lowest Level Heading.} Text follows & 10 point, italic\\
-\hline
-\end{tabular}
-\end{table}
-
-
-\noindent Displayed equations are centered and set on a separate
-line.
-\begin{equation}
-x + y = z
-\end{equation}
-Please try to avoid rasterized images for line-art diagrams and
-schemas. Whenever possible, use vector graphics instead (see
-Fig.~\ref{fig1}).
-
-\begin{figure}
-% \includegraphics[width=\textwidth]{fig1.eps}
-\caption{A figure caption is always placed below the illustration.
-Please note that short captions are centered, while long ones are
-justified by the macro package automatically.} \label{fig3}
-\end{figure}
-
-\begin{theorem}
-This is a sample theorem. The run-in heading is set in bold, while
-the following text appears in italics. Definitions, lemmas,
-propositions, and corollaries are styled the same way.
-\end{theorem}
-%
-% the environments 'definition', 'lemma', 'proposition', 'corollary',
-% 'remark', and 'example' are defined in the LLNCS documentclass as well.
-%
-\begin{proof}
-Proofs, examples, and remarks have the initial word in italics,
-while the following text appears in normal font.
-\end{proof}
-For citations of references, we prefer the use of square brackets
-and consecutive numbers. Citations using labels or the author/year
-convention are also acceptable. The following bibliography provides
-a sample reference list with entries for journal
-articles~\cite{ref_article1}, an LNCS chapter~\cite{ref_lncs1}, a
-book~\cite{ref_book1}, proceedings without editors~\cite{ref_proc1},
-and a homepage~\cite{ref_url1}. Multiple citations are grouped
-\cite{ref_article1,ref_lncs1,ref_book1},
-\cite{ref_article1,ref_book1,ref_proc1,ref_url1}.
-
