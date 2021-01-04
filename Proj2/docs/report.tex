@@ -9,7 +9,11 @@
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage{hyperref}
-\usepackage{authblk}
+\usepackage{listings}
+\lstset {
+    language=Prolog,
+    basicstyle=\footnotesize, % basic font setting
+}
 \renewcommand\UrlFont{\color{blue}\rmfamily}
 \newcommand{\inlinecode}[1]{\texttt{#1}}
 
@@ -309,7 +313,9 @@ implementation performs as fast as possible.
 \end{thebibliography}
 
 \section{Annex}
+\subsection{Graphs}
 
-// TODO source code + extra graphs + problem gen ?
+\subsection{Source code}
+\lstinputlisting{../chessnum.pl}
 
 \end{document}

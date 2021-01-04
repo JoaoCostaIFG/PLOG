@@ -12,7 +12,8 @@ flattenList([[X, Y, Z] | L], [X, Y, Z | NL]):- flattenList(L, NL).
 
 elemToID([X, Y], V) :- V #= X + Y * 8.
 coordToIndexList([], []).
-coordToIndexList([Coord | L], [V | NL]):- elemToID(Coord, V), coordToIndexList(L, NL).
+coordToIndexList([Coord | L], [V | NL]):-
+  elemToID(Coord, V), coordToIndexList(L, NL).
 
 stripNumberedSquareValue([], []).
 stripNumberedSquareValue([Coord-_ | L1], [Coord | L2]) :-
@@ -94,12 +95,14 @@ valueQueen([QX, QY], [X, Y], 0, _) :-
     abs(QY - Y) #\= abs(QX - X), QX #\= X, QY #\= Y.
 
 % ROOK
-% if on the same line, attacks is has line of sight (horizontal)
+% if on the same line, attacks is has line of sight
+% (horizontal)
 valueRook([RX, RY], [X, Y], V, Others) :-
     RY #= Y,
     bigger(RX, X, BigX, SmallX),
     others_is_not_between([SmallX, RY]-h-[BigX, Y], V, Others).
-% if on the same column, attacks is has line of sight (vertical)
+% if on the same column, attacks is has line of sight
+% (vertical)
 valueRook([RX, RY], [X, Y], V, Others) :-
     RX #= X,
     bigger(RY, Y, BigY, SmallY),
@@ -128,7 +131,8 @@ valueKnight([KX, KY], [X, Y], V) :-
 valuePawn([PX, PY], [X, Y], V) :-
     (PY - Y #= 1 #/\ abs(PX - X) #= 1) #<=> V.
 
-% Constraints the pieces coordinates to not attack a numbered square that can't be attacked.
+% Constraints the pieces coordinates to not attack a
+% numbered square that can't be attacked.
 value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, 0) :-
     valueKing(King, Coord, 0),
     valueKnight(Knight, Coord, 0),
@@ -136,7 +140,8 @@ value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, 0) :-
     valueQueen(Queen, Coord, 0, [King, Rook, Bishop, Knight, Pawn]),
     valueRook(Rook, Coord, 0, [King, Queen, Bishop, Knight, Pawn]),
     valueBishop(Bishop, Coord, 0, [King, Queen, Rook, Knight, Pawn]).
-% Constraints the pieces coordinates to attack a numbered square the given number of times.
+% Constraints the pieces coordinates to attack a
+% numbered square the given number of times.
 value([King, Queen, Rook, Bishop, Knight, Pawn], Coord, V) :-
     V #\= 0,
     valuePawn(Pawn, Coord, PawnV),
@@ -155,11 +160,13 @@ chess_num(NumberedSquares, Coords) :-
     init_coord(Bishop), init_coord(Knight), init_coord(Pawn),
 
     % for alldistinct
-    stripNumberedSquareValue(NumberedSquares, NumberedSquaresCoords), % get values coords
+    % get values coords
+    stripNumberedSquareValue(NumberedSquares, NumberedSquaresCoords),
     coordToIndexList(NumberedSquaresCoords, PosL1),
     coordToIndexList(Coords, PosL2),
     append(PosL1, PosL2, PosL),
-    all_distinct(PosL), % all cordinates of pieces and numbered squares have to be distinct
+    % all cordinates of pieces and numbered squares have to be distinct
+    all_distinct(PosL),
 
     % solve the problem
     mapValues(Coords, NumberedSquares),
@@ -254,7 +261,8 @@ gen_pieceCoords([King, Queen, Rook, Bishop, Knight, Pawn]) :-
     % generate 6 random (distinct) coordinates for the game pieces
     numList(0, 64, PossibleCoords),
     random_permutation(PossibleCoords, PermutatedCoords),
-    permutatedIndsToCoords(PermutatedCoords, [King, Queen, Rook, Bishop, Knight, Pawn]).
+    permutatedIndsToCoords(PermutatedCoords,
+      [King, Queen, Rook, Bishop, Knight, Pawn]).
 
 % restricts all elements in a list to be sorted
 forceListSorted([]).
@@ -263,7 +271,8 @@ forceListSorted([A, B | C]) :-
     A #< B,
     forceListSorted([B | C]).
 
-gen_problem(NCells, [King, Queen, Rook, Bishop, Knight, Pawn], NumberedSquares) :-
+gen_problem(NCells, [King, Queen, Rook, Bishop, Knight, Pawn],
+  NumberedSquares) :-
     NCells < 57, % have to leave 6 free spots for the pieces (63 - 6 = 57)
     Coords = [King, Queen, Rook, Bishop, Knight, Pawn],
     gen_pieceCoords(Coords),
@@ -273,16 +282,18 @@ gen_problem(NCells, [King, Queen, Rook, Bishop, Knight, Pawn], NumberedSquares) 
     initNumberedSquares(NumberedSquares),
 
     % for alldistinct
-    stripNumberedSquareValue(NumberedSquares, NumberedSquaresCoords), % strip value of NumberedSquares list
+    % strip value of NumberedSquares list
+    stripNumberedSquareValue(NumberedSquares, NumberedSquaresCoords),
     % convert coordinates to corresponding integer indexes
     coordToIndexList(Coords, PosL1),
     coordToIndexList(NumberedSquaresCoords, PosL2),
     append(PosL1, PosL2, PosL),
-    all_distinct(PosL), % all numbered squares and pieces must have distinct coordinates
+    % all numbered squares and pieces must have distinct coordinates
+    all_distinct(PosL),
 
     % make all NumberedSquares sorted => prevent symmetric results
-    % (the order of the numbered squares declaration doesn't affect the result, so
-    % different orderings don't result in different problems)
+    % (the order of the numbered squares declaration doesn't affect the result,
+    % so different orderings don't result in different problems)
     forceListSorted(PosL2),
 
     % solve the problem for the given pieces coordinates and numbered squares
@@ -318,56 +329,44 @@ test2(C) :-
     t([[2, 7]-4, [2, 1]-4, [6, 3]-4, [0, 5]-0], C).
 
 test3(C) :-
-  t([
-        [7, 3]-0,
-        [7, 4]-0,
-        [6, 4]-0,
-        [1, 0]-0,
-        [0, 0]-1,
-        [5, 7]-0,
-        [5, 6]-0,
-        [3, 3]-0,
-        [4, 3]-0,
-        [0, 2]-0,
-        [5, 0]-0,
-        [7, 7]-1,
-        [7, 0]-1
-    ], C).
-    % t([[1, 0]-0, [5, 0]-0, [0, 2]-0, [3, 3]-0, [4, 3]-0, [7, 3]-0, [6, 4]-0, [7, 4]-0,
-  % [5, 6]-0, [5, 7]-0, [0, 0]-1, [7, 0]-1, [7, 7]-1], C).
+  t([[7, 3]-0, [7, 4]-0, [6, 4]-0, [1, 0]-0, [0, 0]-1, [5, 7]-0, [5, 6]-0,
+    [3, 3]-0, [4, 3]-0, [0, 2]-0, [5, 0]-0, [7, 7]-1, [7, 0]-1], C).
 
 test4(C) :-
     t([[4, 4]-5, [2, 1]-3, [3, 6]-3, [7, 6]-0, [7, 1]-0], C).
 
 test5(C) :-
-    t([[5, 4]-4, [1, 0]-0, [2, 0]-0, [5, 0]-0, [7, 1]-0, [7, 2]-0, [0, 4]-0, [7, 4]-0,
-    [7, 6]-0, [2, 7]-0, [5, 7]-0, [6, 7]-0, [7, 7]-0], C).
+    t([[5, 4]-4, [1, 0]-0, [2, 0]-0, [5, 0]-0, [7, 1]-0, [7, 2]-0, [0, 4]-0,
+      [7, 4]-0, [7, 6]-0, [2, 7]-0, [5, 7]-0, [6, 7]-0, [7, 7]-0], C).
 
 test6(C) :-
     t([[0, 0]-0, [7, 0]-0, [0, 6]-0, [0, 7]-0, [6, 7]-0,
-  [2, 2]-1, [3, 2]-1, [4, 2]-1, [5, 2]-1,
-  [2, 3]-1, [3, 3]-1, [4, 3]-1, [5, 3]-1,
-  [2, 4]-1, [3, 4]-1, [4, 4]-1, [5, 4]-1,
-  [2, 5]-1, [3, 5]-1, [4, 5]-1, [5, 5]-1], C).
+      [2, 2]-1, [3, 2]-1, [4, 2]-1, [5, 2]-1,
+      [2, 3]-1, [3, 3]-1, [4, 3]-1, [5, 3]-1,
+      [2, 4]-1, [3, 4]-1, [4, 4]-1, [5, 4]-1,
+      [2, 5]-1, [3, 5]-1, [4, 5]-1, [5, 5]-1], C).
 
 test7(C) :-
-    t([[7, 6]-2, [5, 7]-2, [4, 6]-2, [3, 6]-2, [0, 1]-1, [1, 1]-1, [2, 1]-1, [3, 1]-1, [4, 1]-1, [5, 1]-1,
-  [6, 1]-1, [7, 1]-1, [0, 6]-1, [1, 6]-1, [2, 6]-1, [5, 6]-1, [6, 6]-1, [6, 7]-1], C).
+    % t([[0, 1]-1, [1, 1]-1, [2, 1]-1, [3, 1]-1, [4, 1]-1, [5, 1]-1, [6, 1]-1,
+      % [7, 1]-1, [0, 6]-1, [1, 6]-1, [2, 6]-1, [5, 6]-1, [6, 6]-1, [6, 7]-1,
+      % [7, 6]-2, [5, 7]-2, [4, 6]-2, [3, 6]-2], C).
+    t([[7, 6]-2, [5, 7]-2, [4, 6]-2, [3, 6]-2, [0, 1]-1, [1, 1]-1, [2, 1]-1,
+      [3, 1]-1, [4, 1]-1, [5, 1]-1, [6, 1]-1, [7, 1]-1, [0, 6]-1, [1, 6]-1,
+      [2, 6]-1, [5, 6]-1, [6, 6]-1, [6, 7]-1], C).
 
 test8(C) :-
-    t([[0, 0]-0, [0, 1]-0, [1, 1]-0, [1, 2]-0, [2, 2]-0, [2, 3]-0, [3, 3]-0, [3, 4]-0, [4, 4]-0, [4, 5]-0,
-  [5, 5]-0, [5, 6]-0, [6, 6]-0, [6, 7]-0, [7, 7]-0, [2, 6]-2], C).
+    t([[0, 0]-0, [0, 1]-0, [1, 1]-0, [1, 2]-0, [2, 2]-0, [2, 3]-0, [3, 3]-0,
+      [3, 4]-0, [4, 4]-0, [4, 5]-0, [5, 5]-0, [5, 6]-0, [6, 6]-0, [6, 7]-0,
+      [7, 7]-0, [2, 6]-2], C).
 
 test9(C) :-
-    t([[2, 4]-4, [4, 4]-4, [2, 3]-3, [4, 3]-3, [2, 0]-0, [3, 0]-0, [6, 7]-0, [2, 2]-2, [4, 2]-2, [2, 1]-1, [4, 1]-1], C).
+    t([[2, 4]-4, [4, 4]-4, [2, 3]-3, [4, 3]-3, [2, 0]-0, [3, 0]-0, [6, 7]-0,
+      [2, 2]-2, [4, 2]-2, [2, 1]-1, [4, 1]-1], C).
 
 test10(C) :-
-    % t([[0, 0]-0, [1, 0]-0, [2, 0]-0, [3, 0]-0, [4, 0]-0, [5, 0]-0, [6, 0]-0, [7, 0]-0,
-  % [0, 1]-1, [1, 1]-1, [2, 1]-1, [3, 1]-1, [4, 1]-1, [5, 1]-1, [6, 1]-1, [7, 1]-1,
-  % [0, 5]-1, [2, 6]-2, [4, 7]-3], C).
-    t([[4, 7]-3, [0, 0]-0, [1, 0]-0, [2, 0]-0, [3, 0]-0, [4, 0]-0, [5, 0]-0, [6, 0]-0, [7, 0]-0,
-  [2, 6]-2, [0, 1]-1, [1, 1]-1, [2, 1]-1, [3, 1]-1, [4, 1]-1, [5, 1]-1, [6, 1]-1, [7, 1]-1,
-  [0, 5]-1], C).
+    t([[4, 7]-3, [0, 0]-0, [1, 0]-0, [2, 0]-0, [3, 0]-0, [4, 0]-0, [5, 0]-0,
+      [6, 0]-0, [7, 0]-0, [2, 6]-2, [0, 1]-1, [1, 1]-1, [2, 1]-1, [3, 1]-1,
+      [4, 1]-1, [5, 1]-1, [6, 1]-1, [7, 1]-1, [0, 5]-1], C).
 
 test11(C) :-
     t([[6, 1]-3, [1, 4]-3, [6, 4]-3, [4, 6]-3, [2, 1]-2, [3, 2]-2, [2, 7]-1], C).
