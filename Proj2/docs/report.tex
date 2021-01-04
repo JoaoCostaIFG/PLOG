@@ -209,14 +209,15 @@ to 7.62 seconds.
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.4\linewidth]{figures/chess7.eps}
-  \caption{A puzzle with four numbered squares and a unique solution.}\label{fig:fig6}
+  \caption{A puzzle in which the order of the numbered squares processing makes a big impact.}\label{fig:fig6}
 \end{figure}
 
 We believe the best way to order the processing of the squares is to order by
 the values from highest to the lowest. After that, we disambiguate the ones
 with the same values by ordering from the closest to the corners of the board
-to the ones closer to the center of the board. This usually yields much better
-results, but not always.
+to the ones closer to the center of the board. Usually, this yields much better
+results, but not always. Sadly, this means we aren't sure how to pre-process
+the numbered square list.
 
 \subsection{Search strategies}
 
@@ -251,6 +252,15 @@ seems to be specific to this puzzle.
 |-----------------+-------+-------+--------+--------|
 
 \section{Conclusions and Future Work}
+The constraints implemented are able to find solutions to any problem fairly
+quickly. Lower quantities of numbered squares result in faster solutions
+(less constraints). Numbered squares with values of 0 or 6 are faster to
+take care of and problems with more of them are solved faster than problems
+without (when comparing problems with the same quantity of numbered squares).
+
+In the future, work should be focused in finding/implementing a way to do the
+correct preprocessing of the numbered square list. This will ensure that the
+implementation performs as fast as possible.
 
 // TODO site do puzzle + slides do prof + docs do sicstus ?
 \begin{thebibliography}{8}
