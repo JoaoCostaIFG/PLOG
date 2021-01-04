@@ -69,6 +69,45 @@ distinct both between each other, as well from the given numbered cells' coordin
 
 \subsection{Constraints}
 
+%\subsubsection{All Distinct}
+The first restriction placed is applied to the coordinates' pieces. It ensures that all of them
+and the chosen cells' coordinates are all different. To achieve this we use the library
+predicate \inlinecode{all\_distinct/1} with a list of indices for each coordinate
+[X, Y], each index corresponding to $Y * 8 + X$.
+
+%\subsubsection{Value}
+The second set of restrictions is applied for each given cell, and it ensures that, for each
+one, its value corresponds to number of attacking placed pieces. For this, the \inlinecode{value/3}
+predicate is used. It first calculates a boolean value for each piece through the use of the predicate
+\inlinecode{value[Piece\_Name]/3}. The calculated value corresponds to 1 if the piece is attacking
+the cell and to 0 if it isn't attacking. A sum is then used to verify that the sum of all pieces' values
+correspond to the given cell's value.
+
+%\subsubsection{KingValue, KnightValue and PawnValue}
+The predicates \inlinecode{valueKing/3, valueKnight/3, valuePawn/3} are straightforward, as
+collisions aren't possible with these pieces. Their implementation applies restrictions based
+on chess' rules and are as follows: \inlinecode{valueKing/3} yields 1 if the given cell is orthogonally adjacent to
+the king; \inlinecode{valueKnight/3} yields 1 if the given cell makes a 'L' pattern
+with the knight; \inlinecode{valuePawn/3} yields 1 if the given cell is diagonally and adjacent to
+the pawn. If any of these predicates yield 1, constraints are placed to the pieces' coordinates
+to ensure that the rules are followed. During the program execution, these constraints may
+be too rigid, causing the predicate to fail and backtrack, lifting the placed restrictions and
+yielding 0.
+
+%\subsubsection{QueenValue, BishopValue and RookValue}
+The predicates \inlinecode{valueQueen/3, valueBishop/3, valueRook/3} behave similarly to
+the previous explained predicates when it comes to applying chess rules. The rook can attack
+horizontaly or verticaly, the bishop can attack diagonally and the queen can attack horizontaly, verticaly
+or diagonally. The main difference is that all of them need also to ensure that no other piece
+is placed between their attack path and the given cell.
+For this purpose, we use the predicate \inlinecode{others\_is\_not\_between/3}, which calls
+\inlinecode{is\_not\_between/3} for each other piece with a given attack path (diagonal, vertical or horizontal)
+correspondant to the attacking piece's attack move. \inlinecode{is\_not\_between/3} yields 1 and
+restricts the given piece to not be the within attack and can yield 0 through backtrack.
+The \inlinecode{others\_is\_not\_between/3} uses this result to verify that all of the members of
+the given list aren't in the attacking piece's path. If any other piece blocks the attack path,
+this predicate yields 0.
+
 \section{Solution Presentation}
 
 The main (outermost) predicates that allow for a problem/solution visualization
