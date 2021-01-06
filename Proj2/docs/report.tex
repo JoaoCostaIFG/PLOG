@@ -232,7 +232,7 @@ effect ranged from mild (a few fractions of a second) to extreme (one or two
 hours).
 
 The most extreme case we found was the following puzzle. This puzzle has a single
-solution and the program was tacking hours to find it. By changing the order
+solution and the program was taking hours to find it. By changing the order
 the numbered squares are processed, we were able to reduce the processing time
 to \textbf{under 8 seconds}.
 
@@ -250,6 +250,12 @@ from the closest to the corners of the board to the ones closer to the center of
 the board. Usually, this yields much better results, but not always. Sadly,
 this means we aren't sure how to preprocess the numbered square list.
 
+This ordering problem can also be attributed to the large number of back-tracks
+during the execution of the code. This backtracks are caused by the attempt
+of placing the pieces in attack positions. Finding a way to join all the conditions
+of each piece into a single one, would most likely reduce the number of backtracks,
+speeding up the code and getting rid of the square processing order problem.
+
 \subsection{Search strategies}
 These performance tests were done on puzzle in figure~\ref{fig:fig7}. Each combination
 of option was run three times. The numbers shown are the average of the three
@@ -261,7 +267,7 @@ puzzles. A close seconds was \textbf{ffc} with \textbf{median}. In this puzzle,
 \textbf{occurrence} with \textbf{bisect} has a very good performance, but it
 seems to be specific to this puzzle.
 
-\begin{table}
+\begin{table}[H]
   \begin{center}
     \caption{Search time for each option combination}
     \label{tab:table1}
@@ -295,7 +301,8 @@ faster to take care of and problems with more of them are solved faster than
 problems without (when comparing problems with the same quantity of numbered squares).
 
 In the future, work should be focused in finding/implementing a way to do the
-correct preprocessing of the numbered square list. This will ensure that the
+correct preprocessing of the numbered square list and/or reducing the number
+of back-tracks during the execution of the code. This will ensure that the
 implementation performs as fast as possible.
 
 \begin{thebibliography}{8}
