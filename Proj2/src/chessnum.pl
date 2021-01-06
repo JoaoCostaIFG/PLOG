@@ -28,6 +28,9 @@ mapValues(Coords, [Coord-V | L1]) :-
     value(Coords, Coord, V),
     mapValues(Coords, L1).
 
+bigger(N1, N2, N1, N2) :- N1 #> N2.
+bigger(N1, N2, N2, N1) :- N1 #< N2.
+
 % BLACKLIST [Cin-T-Cout | _]
 % T: d, h, v
 
@@ -38,7 +41,7 @@ is_not_between([X, Y], [CinX, Y2]-h-[CoutX, Y2], V) :-
         % true if is between
         Y #= Y2 
         #/\
-        abs(CinX - CoutX) #= abs(CoutX - X) + abs(CinX - X) 
+        CinX #< X #/\ X #< CoutX
     )) #<=> V.
 is_not_between([X, Y], [X2, CinY]-v-[X2, CoutY], V) :-
     % true if is not between
@@ -46,17 +49,17 @@ is_not_between([X, Y], [X2, CinY]-v-[X2, CoutY], V) :-
         % true if is between
         X #= X2 
         #/\
-        abs(CinY - CoutY) #= abs(CoutY - Y) + abs(CinY - Y) 
+        CinY #< Y #/\ Y #< CoutY
     )) #<=> V.
-is_not_between([X, Y], [CinX, CinY]-d-[CoutX, CoutY], V) :-
+is_not_between([X, Y], [CinX, CinY]-d-[CoutX, CoutY]-[TX, TY], V) :-
     % true if is not between
     (#\ (
         % true if is between
-        abs(X - CoutX) #= abs(Y - CoutY)
+        abs(X - TX) #= abs(Y - TY)
         #/\
-        abs(CinY - CoutY) #= abs(CoutY - Y) + abs(CinY - Y) 
+        CinX #< X #/\ X #< CoutX
         #/\
-        abs(CinX - CoutX) #= abs(CoutX - X) + abs(CinX - X) 
+        CinY #< Y #/\ Y #< CoutY
     )) #<=> V.
 
 others_is_not_between(_, 1, []).
@@ -65,17 +68,7 @@ others_is_not_between(Condition, V, [OtherCoord | Others]) :-
     others_is_not_between(Condition, V, Others).
 others_is_not_between(Condition, 0, [OtherCoord | _Others]) :-
     is_not_between(OtherCoord, Condition, 0).
-     %others_is_not_between(Condition, _, Others).
-
-%others_is_not_between(Condition, Output, [P1, P2, P3, P4, P5]) :-
-    %is_not_between(P1, Condition, V1),
-    %is_not_between(P2, Condition, V2),
-    %is_not_between(P3, Condition, V3),
-    %is_not_between(P4, Condition, V4),
-    %is_not_between(P5, Condition, V5),
-    %(
-        %(V1 #/\ V2 #/\ V3 #/\ V4 #/\ V5) #<=> Output
-    %).
+    % others_is_not_between(Condition, _, Others).
 
 % VALUES
 % These predicates return 1 in V if the given piece can attack the numbered square
@@ -88,62 +81,50 @@ valueKing([KX, KY], [X, Y], V) :-
 % if on the same line, attacks is has line of sight (horizontal)
 valueQueen([QX, QY], [X, Y], V, Others) :-
     QY #= Y,
-    others_is_not_between([QX, QY]-h-[X, Y], V, Others).
+    bigger(QX, X, BigX, SmallX),
+    others_is_not_between([SmallX, QY]-h-[BigX, Y], V, Others).
 % if on the same column, attacks is has line of sight (vertical)
 valueQueen([QX, QY], [X, Y], V, Others) :-
     QX #= X,
-    others_is_not_between([QX, QY]-v-[X, Y], V, Others).
+    bigger(QY, Y, BigY, SmallY),
+    others_is_not_between([QX, SmallY]-v-[X, BigY], V, Others).
 % if on the same diagonal, attacks if has line of sight (diagonal)
 valueQueen([QX, QY], [X, Y], V, Others) :-
     abs(QY - Y) #= abs(QX - X),
-    others_is_not_between([QX, QY]-d-[X, Y], V, Others).
+    bigger(QX, X, BigX, SmallX),
+    bigger(QY, Y, BigY, SmallY),
+    others_is_not_between([SmallX, SmallY]-d-[BigX, BigY]-[X, Y], V, Others).
 % if not on the same line, column, and diagonal doesn't attack
 valueQueen([QX, QY], [X, Y], 0, _) :-
     abs(QY - Y) #\= abs(QX - X), QX #\= X, QY #\= Y.
-
-%valueQueen([QX, QY], [X, Y], V, Others) :-
-    %bigger(QY, Y, BigY, SmallY),
-    %bigger(QX, X, BigX, SmallX),
-    %others_is_not_between([SmallX, SmallY]-d-[BigX, BigY]-[X, Y], VDiag, Others),
-    %others_is_not_between([SmallX, QY]-h-[BigX, Y], VHoriz, Others),
-    %others_is_not_between([QX, SmallY]-v-[X, BigY], VVert, Others),
-    %(
-        %(QY #= Y #/\ VHoriz)
-        %#\/
-        %(QX #= X #/\ VVert)
-        %#\/
-        %((abs(QY - Y) #= abs(QX - X)) #/\ VDiag)
-    %) #<=> V.
 
 % ROOK
 % if on the same line, attacks is has line of sight
 % (horizontal)
 valueRook([RX, RY], [X, Y], V, Others) :-
     RY #= Y,
-    others_is_not_between([RX, RY]-h-[X, Y], V, Others).
+    bigger(RX, X, BigX, SmallX),
+    others_is_not_between([SmallX, RY]-h-[BigX, Y], V, Others).
 % if on the same column, attacks is has line of sight
 % (vertical)
 valueRook([RX, RY], [X, Y], V, Others) :-
     RX #= X,
-    others_is_not_between([RX, RY]-v-[X, Y], V, Others).
+    bigger(RY, Y, BigY, SmallY),
+    others_is_not_between([RX, SmallY]-v-[X, BigY], V, Others).
 % if not on the same line and column, doesn't attack
 valueRook([RX, RY], [X, Y], 0, _) :-
     RX #\= X, RY #\= Y.
 
 % BISHOP
 % if on the same diagonal, attacks if has line of sight (diagonal)
-%valueBishop([BX, BY], [X, Y], V, Others) :-
-    %abs(BY - Y) #= abs(BX - X),
-    %others_is_not_between([BX, BY]-d-[X, Y], V, Others).
-%% if not on the same diagonal, doesn't attack
-%valueBishop([BX, BY], [X, Y], 0, _) :-
-    %abs(BY - Y) #\= abs(BX - X).
 valueBishop([BX, BY], [X, Y], V, Others) :-
-    others_is_not_between([BX, BY]-d-[X, Y], VDiag, Others),
-    (
-        (abs(BY - Y) #= abs(BX - X) #/\ VDiag) #<=> V
-    ).
-    
+    abs(BY - Y) #= abs(BX - X),
+    bigger(BX, X, BigX, SmallX),
+    bigger(BY, Y, BigY, SmallY),
+    others_is_not_between([SmallX, SmallY]-d-[BigX, BigY]-[X, Y], V, Others).
+% if not on the same diagonal, doesn't attack
+valueBishop([BX, BY], [X, Y], 0, _) :-
+    abs(BY - Y) #\= abs(BX - X).
 
 % KNIGHT
 valueKnight([KX, KY], [X, Y], V) :-
@@ -196,7 +177,7 @@ chess_num(NumberedSquares, Coords) :-
 
     % UNCOMENT THESE TO GET STATITICS (be careful to change the final
     % dot position)
-    %print_time('Posting Constraints: '),
+    % print_time('Posting Constraints: '),
     flattenList(Coords, L),
     labeling([ffc, bisect], L).
     % print_time('Labeling Time: '),
