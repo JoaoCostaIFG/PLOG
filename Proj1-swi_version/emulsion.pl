@@ -2,10 +2,8 @@
 % EMULSION %
 %%%%%%%%%%%%
 
-:-use_module(library(between)).
 :-use_module(library(system)).
 :-use_module(library(random)).
-:-use_module(library(samsort)).
 
 :-include('emulsion_ai.pl').
 :-include('emulsion_board.pl').
@@ -144,16 +142,16 @@ coordMove([X, Y], Direc, [Xn, Yn]) :-
 % returns the directions from which a connection can possibly
 % be found from a given piece,
 % e.g.: a piece on the top right corner ([0, 0]) can only be connected from south and/or east
-% con_dir([X, Y],  Last index, [Dirs])
-con_dir([0,  0 ],  _L,         ['s', 'e']).
-con_dir([0,  _L],  _L,         ['n', 'e']).
-con_dir([_L, 0 ],  _L,         ['s', 'w']).
-con_dir([_L, _L],  _L,         ['n', 'w']).
-con_dir([_X, 0 ],  _L,         ['s', 'e', 'w']).
-con_dir([_X, _L],  _L,         ['n', 'e', 'w']).
-con_dir([0,  _Y],  _L,         ['e', 'n', 's']).
-con_dir([_L, _Y],  _L,         ['w', 'n', 's']).
-con_dir([_,  _ ],  _L,         ['n', 's', 'e', 'w']).
+% con_dir([X, Y], Last index, [Dirs])
+con_dir([0, 0],   _,         ['s', 'e']).
+con_dir([0, L],   L,         ['n', 'e']).
+con_dir([L, 0],   L,         ['s', 'w']).
+con_dir([L, L],   L,         ['n', 'w']).
+con_dir([_, 0],   _,         ['s', 'e', 'w']).
+con_dir([_, L],   L,         ['n', 'e', 'w']).
+con_dir([0, _],   _,         ['e', 'n', 's']).
+con_dir([L, _],   L,         ['w', 'n', 's']).
+con_dir([_, _],   _,         ['n', 's', 'e', 'w']).
 
 % checks if 2 pieces are next to each other
 adjacent(P, P, _).
@@ -173,19 +171,19 @@ connected(P1, P2, State) :-
 
 % returns all pieces connected to the Start piece (of the same color)
 % recursively
-get_all_adjacent(Start, Res, _State) :-
-  setof(Neighbour, connected(Start, Neighbour, _State), Neighbours),
-  get_all_adjacent(Neighbours, Res, _State, [], _).
+get_all_adjacent(Start, Res, State) :-
+  setof(Neighbour, connected(Start, Neighbour, State), Neighbours),
+  get_all_adjacent(Neighbours, Res, State, [], _).
 get_all_adjacent([], [], _State, Visited, Visited).
-get_all_adjacent([Neighbour | Neighbours], Res, _State, Visited, NVis) :-
+get_all_adjacent([Neighbour | Neighbours], Res, State, Visited, NVis) :-
   member(Neighbour, Visited),
-  get_all_adjacent(Neighbours, Res, _State, Visited, NVis).
-get_all_adjacent([Neighbour | Neighbours], [Neighbour | Res], _State, Vis, NVis) :-
+  get_all_adjacent(Neighbours, Res, State, Visited, NVis).
+get_all_adjacent([Neighbour | Neighbours], [Neighbour | Res], State, Vis, NVis) :-
   \+ member(Neighbour, Vis),
   append(Vis, [Neighbour], TmpVisited),
-  setof(NewNeighbour, connected(Neighbour, NewNeighbour, _State), NewNeighbours),
-  get_all_adjacent(NewNeighbours, CurrRes, _State, TmpVisited, CurrVisited),
-  get_all_adjacent(Neighbours, NextRes, _State, CurrVisited, NVis),
+  setof(NewNeighbour, connected(Neighbour, NewNeighbour, State), NewNeighbours),
+  get_all_adjacent(NewNeighbours, CurrRes, State, TmpVisited, CurrVisited),
+  get_all_adjacent(Neighbours, NextRes, State, CurrVisited, NVis),
   append(CurrRes, NextRes, Res).
 
 % returns a list with all groups of a given player.
@@ -207,16 +205,16 @@ getAllGroups(State, Player, Groups) :-
 % Base value of a piece on a given board place
 % the number of adjacent pieces needs to be added to this value
 % getValue(+[X, Y],   -Value, +Last index, -[Dirs])
-getValue([0,  0 ],    1,      _L, ['s', 'e', 'se']).
-getValue([0,  _L],    1,      _L, ['n', 'e', 'ne']).
-getValue([_L, 0 ],    1,      _L, ['s', 'w', 'sw']).
-getValue([_L, _L],    1,      _L, ['n', 'w', 'nw']).
-getValue([_X, 0 ],    0.5,    _L, ['s', 'e', 'w', 'se', 'sw']) :- L1 is _L - 1, between(1, L1, _X).
-getValue([_X, _L],    0.5,    _L, ['n', 'e', 'w', 'ne', 'nw']) :- L1 is _L - 1, between(1, L1, _X).
-getValue([0,  _Y],    0.5,    _L, ['e', 'n', 's', 'ne', 'ne']) :- L1 is _L - 1, between(1, L1, _Y).
-getValue([_L, _Y],    0.5,    _L, ['w', 'n', 's', 'nw', 'sw']) :- L1 is _L - 1, between(1, L1, _Y).
-getValue([_X, _Y],    0,      _L, ['n', 's', 'e', 'w', 'ne', 'se', 'nw', 'sw']) :-
-  L1 is _L - 1, between(1, L1, _X), between(1, L1, _Y).
+getValue([0,  0],     1,      _, ['s', 'e', 'se']).
+getValue([0,  L],     1,      L, ['n', 'e', 'ne']).
+getValue([L,  0],     1,      L, ['s', 'w', 'sw']).
+getValue([L,  L],     1,      L, ['n', 'w', 'nw']).
+getValue([X,  0],     0.5,    L, ['s', 'e', 'w', 'se', 'sw']) :- L1 is L - 1, between(1, L1, X).
+getValue([X,  L],     0.5,    L, ['n', 'e', 'w', 'ne', 'nw']) :- L1 is L - 1, between(1, L1, X).
+getValue([0,  Y],     0.5,    L, ['e', 'n', 's', 'ne', 'ne']) :- L1 is L - 1, between(1, L1, Y).
+getValue([L,  Y],     0.5,    L, ['w', 'n', 's', 'nw', 'sw']) :- L1 is L - 1, between(1, L1, Y).
+getValue([X,  Y],     0,      L, ['n', 's', 'e', 'w', 'ne', 'se', 'nw', 'sw']) :-
+  L1 is L - 1, between(1, L1, X), between(1, L1, Y).
 
 % returns the value of a piece (base value + number of ortogal neightbors)
 piece_value([X, Y], State, V) :-
@@ -237,8 +235,7 @@ getAllGroupsValues(State, [G|Groups], [R|Res]) :-
 value(GameState, Player, Value) :-
   getAllGroups(GameState, Player, G), !,
   getAllGroupsValues(GameState, G, ListOfVals),
-  samsort(@>=, ListOfVals, Value).
-  % sort(ListOfVals, SortedVals), reverse(SortedVals, Value).
+  sort(0, @>=, ListOfVals, Value).
 
 % Receives 2 lists of group sizes (calculated by the value predicate)
 % Returns the 2 final scores (one for each player)
